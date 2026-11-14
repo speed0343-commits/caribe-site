@@ -51,7 +51,7 @@ const server = http.createServer((req, res) => {
 
   const file = path.normalize(path.join(ROOT, pathname));
   const rel = path.relative(ROOT, file);
-  if (rel.startsWith("..") || path.isAbsolute(rel) || rel.split(path.sep).some((p) => p.startsWith(".")) || rel.split(path.sep)[0] === "api" || BLOCKED.has(rel)) {
+  if (rel.startsWith("..") || path.isAbsolute(rel) || rel.split(path.sep).some((p) => p.startsWith(".")) || ["api", "docs"].includes(rel.split(path.sep)[0]) || BLOCKED.has(rel)) {
     return send(res, 404, "Not Found");
   }
 

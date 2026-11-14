@@ -37,14 +37,20 @@
     return before !== JSON.stringify(list);
   }
 
-  // 바뀐 기록만 서버로 (순서대로 하나씩)
-  let chain = Promise.resolve();
+  // 바뀐 기록만 서버로 (순서대로 하나씩). 저장이 끝나면 화면 아래에 결과를 잠깐 보여 줌 (채팅 답변은 대화창에 바로 보이므로 생략)
+  let chain = Promise.resolve(), failed = false;
   function queue(payload) {
     pending++; gen++;
     chain = chain.then(async () => {
       const r = await api("POST", payload);
-      if (!r.ok && r.status !== 401) toast("저장하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주십시오.");
-    }).finally(() => { pending--; gen++; });
+      if (!r.ok && r.status !== 401) failed = true;
+    }).finally(() => {
+      pending--; gen++;
+      if (pending) return;
+      if (failed) toast("저장하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주십시오.", true);
+      else if (payload.kind !== "chat") toast(payload.action === "delete" ? "삭제했습니다." : "저장했습니다.");
+      failed = false;
+    });
   }
 
   window.RemoteStore = {
@@ -77,11 +83,11 @@
 
   // ---------------- 화면 ----------------
   const $ = (s) => document.querySelector(s);
-  function toast(text) {
+  function toast(text, isError) {
     let t = $("#adminToast");
     if (!t) { t = document.createElement("div"); t.id = "adminToast"; t.className = "contact-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
-    t.textContent = text; t.classList.add("show");
-    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 4000);
+    t.textContent = text; t.classList.add("show"); t.classList.toggle("err", !!isError);
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), isError ? 6000 : 2500);
   }
   function showLogin(msg) {
     $("#adminApp").hidden = true; $("#logoutBtn").hidden = true;

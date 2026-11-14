@@ -205,7 +205,7 @@
       $("#myOrders").querySelectorAll("[data-cancel]").forEach((b) => b.onclick = () => {
         if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "취소 요청 확인 (한 번 더 누르기)"; return; }
         const all = get("carib_orders"); const t = all.find((x) => x.id === b.dataset.cancel);
-        if (t && canCancel(t)) { t.status = "취소 요청"; t.cancelRequestedAt = new Date().toISOString(); localStorage.setItem("carib_orders", JSON.stringify(all)); }
+        if (t && canCancel(t)) { t.status = "취소 요청"; t.cancelRequestedAt = new Date().toISOString(); localStorage.setItem("carib_orders", JSON.stringify(all)); if (window.Remote) Remote.cancelOrder(t); }
         renderLists();
       });
 
@@ -270,5 +270,6 @@
 
     renderHead(); renderLists(); fillProfile();
     window.addEventListener("storage", (e) => { if (e.key === "carib_requests" || e.key === "inquiries" || e.key === "carib_orders") renderLists(); });
+    window.addEventListener("remote:sync", renderLists); // 담당자가 바꾼 주문·의뢰 상태를 서버에서 받아 오면 다시 그림
   }
 })();

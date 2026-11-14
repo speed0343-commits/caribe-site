@@ -400,9 +400,11 @@ function finish() {
     needs: { ...S.needs, mode: "", fee },
     log: S.log,
   };
+  if (window.Remote) Remote.keyed(req);
   const list = store.get(REQUESTS_KEY, []);
   list.unshift(req);
   store.set(REQUESTS_KEY, list);
+  if (window.Remote) Remote.send("request", req); // 서버 저장 + 담당자 알림
   S.step = "done"; renderSummary();
   $("#text").disabled = true;
   say(`의뢰서 <b>${esc(req.id)}</b>가 만들어졌어요. 아래에서 확인하고 인쇄하거나 PDF로 저장하실 수 있습니다.\n담당자가 검토 후 연락드릴게요.`);

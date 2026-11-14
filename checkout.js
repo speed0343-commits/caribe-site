@@ -191,7 +191,9 @@
       courier: "", tracking: "", memo: "",
     };
     order.amounts.total = order.amounts.goods + order.amounts.chaos;
+    if (window.Remote) Remote.keyed(order); // 나중에 진행 상황 조회·취소 요청에 쓰는 열쇠
     const list = store.get(ORDERS_KEY, []); list.unshift(order); store.set(ORDERS_KEY, list);
+    if (window.Remote) Remote.send("order", order); // 서버 저장 + 담당자 알림 (실패하면 다음에 다시 보냄)
     store.set(CART_KEY, {});
     SiteNav.setUrl("checkout.html?done=" + encodeURIComponent(order.id));
     showDone(order);

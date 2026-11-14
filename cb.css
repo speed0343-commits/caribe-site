@@ -447,3 +447,12 @@
   .cb .consult-chat .msg.bot { max-width: 94%; }
 }
 .cb .chat-log { background: #f4f7f5; } /* 메인 상담창도 사이트 색(초록 계열 회색)에 맞춤 */
+
+/* ---------- 관리자 로그인 · 상태 표시 (2026-11-14) ---------- */
+.admin-login { max-width: 420px; margin: 40px auto 0; }
+.admin-login form { display: grid; gap: 14px; }
+.admin-login label { display: grid; gap: 6px; font-weight: 700; }
+.admin-login-msg { min-height: 1.4em; margin: 12px 0 0; color: #c8102e; font-size: 14px; }
+.sys-status { margin: 0 0 14px; font-size: 13px; color: #4b5651; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sys-status.warn span:first-child { color: #c8102e; font-weight: 700; }
+.contact-toast.show { opacity: 1; transform: translate(-50%, 0); }

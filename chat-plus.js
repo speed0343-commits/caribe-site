@@ -341,9 +341,11 @@ function ensureQuoteModal() {
       const me = window.CaribAuth && CaribAuth.current();
       const body = q.items.map((x) => `- ${x.sub_of ? "  └ " : ""}${x.name}${x.pn ? ` (OEM ${x.pn})` : ""} x ${x.qty}세트 ${x.sub ? won(x.sub) : "별도 견적"}`).join("\n");
       const list = store.get(INQUIRIES_KEY, []);
-      list.push({ name: q.to || "(견적 요청)", phone: q.phone, vin: q.vin, at: new Date().toISOString(), memberId: me ? me.id : "", quoteId: q.id,
-        message: `[견적서 ${q.id}] 확인 요청${q.car ? `\n차량: ${q.car}` : ""}\n${body}\n합계 ${won(q.total)}${q.pending ? " + 가공비 별도" : ""} (${PRICE_NOTE})` });
+      const inq = { id: "IQ-" + Date.now().toString(36).toUpperCase(), name: q.to || "(견적 요청)", phone: q.phone, vin: q.vin, at: new Date().toISOString(), memberId: me ? me.id : "", quoteId: q.id,
+        message: `[견적서 ${q.id}] 확인 요청${q.car ? `\n차량: ${q.car}` : ""}\n${body}\n합계 ${won(q.total)}${q.pending ? " + 가공비 별도" : ""} (${PRICE_NOTE})` };
+      list.push(inq);
       store.set(INQUIRIES_KEY, list);
+      if (window.Remote) Remote.send("inquiry", inq); // 서버 저장 + 담당자 알림
       const qs = store.get(QUOTES_KEY, []); qs.unshift({ ...q, sentAt: new Date().toISOString() }); store.set(QUOTES_KEY, qs.slice(0, 200));
       msg.textContent = `담당자에게 견적서를 보냈어요. ${inHours() ? "영업시간이라 곧 연락드릴게요." : "다음 영업일 오전에 연락드릴게요."}`; msg.className = "qt-msg ok";
       say(`견적서 <b>${esc(q.id)}</b>를 담당자에게 보냈어요. 남겨 주신 연락처(${esc(q.phone)})로 확인 연락을 드릴게요.`);
@@ -396,8 +398,10 @@ function customAnswer(t) {
 function logUnanswered(text, t) {
   const list = store.get(AI_UNANSWERED_KEY, []);
   const car = [chatState.make && makeKo(chatState.make), chatState.group, chatState.code].filter(Boolean).join(" ");
-  list.unshift({ id: "AQ-" + Date.now().toString(36).toUpperCase(), q: text.slice(0, 300), norm: kwNorm(t).slice(0, 200), at: new Date().toISOString(), car, status: "미처리" });
+  const item = { id: "AQ-" + Date.now().toString(36).toUpperCase(), q: text.slice(0, 300), norm: kwNorm(t).slice(0, 200), at: new Date().toISOString(), car, status: "미처리" };
+  list.unshift(item);
   store.set(AI_UNANSWERED_KEY, list.slice(0, 500));
+  if (window.Remote) Remote.send("unanswered", item); // 관리자 'AI 미답변'에 모음
 }
 
 
@@ -476,6 +480,7 @@ function orderRoute(text, t) {
     if (chatState.cancelArm !== id) { chatState.cancelArm = id; say(`<b>${esc(id)}</b> 주문을 취소 요청할까요? 확인하시면 담당자가 처리한 뒤 알려 드려요.` + chips([["네, 취소 요청할게요", "#ocancel:" + id], ["아니요", "#ocancel-no"]])); return true; }
     chatState.cancelArm = null;
     o.status = "취소 요청"; o.cancelRequestedAt = new Date().toISOString(); store.set(ORDERS_KEY, all);
+    if (window.Remote) Remote.cancelOrder(o); // 서버 주문도 취소 요청으로 + 담당자 알림
     say(`<b>${esc(id)}</b> 주문의 취소 요청을 접수했어요. 담당자가 확인한 뒤 처리 결과를 알려 드려요.`); return true;
   }
   if (text === "#ocancel-no") { chatState.cancelArm = null; say("취소하지 않았어요. 주문은 그대로 진행돼요."); return true; }

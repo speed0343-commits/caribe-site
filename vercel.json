@@ -32,6 +32,11 @@
       "source": "/docs/:path*",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/lib/:path*",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }

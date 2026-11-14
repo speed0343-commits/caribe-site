@@ -144,7 +144,7 @@ function aiAssist(text) {
   if (/(카오스|효과|성능|좋아|차이)/.test(t)) {
     const r = window.ResearchQA && ResearchQA.answer("improve", t);
     if (r && /(효과|성능|좋아|차이)/.test(t)) return r.html;
-    return "카오스 가공은 현재 <b>제공 중</b>입니다. 타입별 차이는 홈의 형상과 배치입니다.\n의뢰서를 남겨 주시면 담당자가 진행 가능 여부를 안내드립니다." + chips([["성능 시험 수치 보기", "#rq:improve"]]);
+    return "카오스 가공은 현재 <b>제공 중</b>입니다. 타입별 차이는 홈의 형상과 배치입니다.\n의뢰서를 남겨 주시면 담당자가 진행 가능 여부를 안내드립니다." + chips([["외부 연구 결과 보기", "#rq:improve"]]);
   }
   if (/(가격|비용|얼마|가공비)/.test(t)) {
     const p = S.disc.pn && findPn(S.disc.pn);

@@ -101,7 +101,7 @@
     if (id === "what") {
       html = `<b>카오스 가공</b>은 브레이크 디스크 마찰면에 홈 패턴을 가공하는 카리브무역이 <b>제공하는 가공</b>입니다. ` +
         `타입은 ${esc(pat("slotted").name)}(${esc(pat("slotted").tag)}), ${esc(pat("chaosA").name)}(${esc(pat("chaosA").tag)}), ${esc(pat("chaosB").name)}(${esc(pat("chaosB").tag)}) 세 가지이며, 차이는 홈의 형상과 배치입니다.\n${NO_TEST}`;
-      actions.push(["성능 시험 수치 보기", "#rq:improve"], ["가공 상담 시작", "#consult"]);
+      actions.push(["외부 연구 결과 보기", "#rq:improve"], ["가공 상담 시작", "#consult"]);
     } else if (id === "plain-slot") {
       html = `${shapeLine(pat("plain"))}\n${shapeLine(pat("slotted"))}\n` +
         `슬롯(홈) 디스크에 관한 외부 연구는 있지만, 다른 연구기관이 다른 시편으로 시험한 결과라 카리브무역 제품의 성능으로 볼 수 없습니다.\n${NO_TEST}`;

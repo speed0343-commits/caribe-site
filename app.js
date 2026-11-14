@@ -357,7 +357,7 @@ function faqReply(t, text) {
   // 주문 · 배송 · 결제
   if (/(어디쯤|배송\s?(조회|상태|추적)|주문\s?(조회|내역|확인|상태)|송장)/.test(tt)) return "주문 진행 상황은 <a href=\"mypage.html\">마이페이지</a>에서 확인하실 수 있어요.\n주문 접수 → 적용 확인 → 입금 확인 → 출고 준비 → 배송 중 → 배송 완료 순서로 바뀝니다. 비회원 주문은 전화(" + TEL + ")로 문의해 주십시오.";
   if (/취소/.test(tt)) return "출고 전이라면 <a href=\"mypage.html\">마이페이지</a> 주문 내역에서 '주문 취소 요청'을 누르시거나 전화(" + TEL + ")로 말씀해 주십시오. 이미 출고됐다면 담당자가 반품 방법을 안내드려요.";
-  if (/(반품|환불|교환)/.test(tt)) return "받으신 상품에 문제가 있거나 차량에 맞지 않으면 먼저 담당자에게 연락 주십시오. 상품 상태와 장착·가공 여부를 확인한 뒤 교환이나 반품 방법을 안내드려요.\n이런 일을 줄이려고 주문하시면 출고 전에 차대번호로 적용 여부를 한 번 더 확인합니다." + chips([["담당자 확인 요청", "#inquiry"], ["상담사와 채팅", "#agent"]]);
+  if (/(반품|환불|교환(?!\s?(주기|시기|시점|타이밍|기준)))/.test(tt)) return "받으신 상품에 문제가 있거나 차량에 맞지 않으면 먼저 담당자에게 연락 주십시오. 상품 상태와 장착·가공 여부를 확인한 뒤 교환이나 반품 방법을 안내드려요.\n이런 일을 줄이려고 주문하시면 출고 전에 차대번호로 적용 여부를 한 번 더 확인합니다." + chips([["담당자 확인 요청", "#inquiry"], ["상담사와 채팅", "#agent"]]);
   if (/(제주|도서\s?산간|산간)/.test(tt)) return "제주와 도서산간 지역도 배송해 드려요. 추가 비용이나 일정 차이가 있으면 주문 확인 때 미리 안내드릴게요.";
   if (/(배송비|택배비|무료\s?배송)/.test(tt)) return "배송비는 <b>무료</b>예요.\n국내 재고 상품은 차량 적용 확인 후 출고하고, 해외에서 들여오는 상품은 일정을 따로 안내드려요.";
   if (/(배송|택배|언제\s?(와|와요|받|도착|오)|도착|며칠|출고)/.test(tt)) return "주문하시면 담당자가 차량 적용 여부를 먼저 확인한 뒤 출고해요. 국내 재고 상품은 확인되는 대로 순서대로 보내 드리고, 해외 조달 상품은 예상 일정을 따로 안내드려요.\n정확한 출고일은 주문 확인 연락 때 알려 드립니다.";
@@ -372,7 +372,7 @@ function faqReply(t, text) {
   if (/재고/.test(tt)) return "재고는 품목마다 달라요. 원하시는 디스크를 담아 주문하시거나 문의를 남겨 주시면 국내 재고를 확인하고, 없으면 해외 조달 일정까지 안내드려요.";
   if (/(앞|뒤).*(같이|함께|둘\s?다|동시에?).*(사야|바꿔야|바꾸나|교체해야|갈아야|해야)/.test(tt)) return "앞과 뒤 디스크는 닳는 속도가 달라서 <b>꼭 함께 바꾸실 필요는 없어요</b>.\n다만 같은 축의 좌우 2장은 반드시 함께 바꾸시고, 다른 쪽은 최소 두께와 표면 상태를 보고 정하시면 됩니다. 정비업체 점검 때 함께 확인해 보십시오.";
   if (/두께.*(남|갈|교체|바꿔|한계)/.test(tt)) return "디스크 옆면에 새겨진 <b>최소 두께(MIN TH)</b>보다 얇아지면 교체하셔야 해요. 예를 들어 'MIN TH 22.4'라면 22.4mm가 한계예요.\n최소 두께에 가깝지 않더라도 떨림이 있거나 깊은 홈·균열이 보이면 바꾸시는 게 좋습니다. 상품 카드의 '최소 ○○mm'가 그 값이에요.";
-  if (/(교체\s?(주기|시기|언제|해야)|언제\s?(바꿔|갈아)|갈아야|바꿔야|얼마나\s?(타|쓰)|수명|몇\s?(km|키로|킬로))/.test(tt)) return "운전 습관과 차종에 따라 달라서 정해진 주기는 없어요.\n디스크가 <b>최소 두께</b>보다 얇아졌거나, 제동할 때 떨림이 있거나, 표면에 깊은 홈이나 균열이 보이면 교체할 때예요. 보통 패드를 두 번 갈 때 디스크를 한 번 함께 바꾸는 경우가 많습니다.";
+  if (/((교체|교환)\s?(주기|시기|언제|해야)|언제\s?(바꿔|갈아)|갈아야|바꿔야|얼마나\s?(타|쓰)|수명|몇\s?(km|키로|킬로))/.test(tt)) return "운전 습관과 차종에 따라 달라서 정해진 주기는 없어요.\n디스크가 <b>최소 두께</b>보다 얇아졌거나, 제동할 때 떨림이 있거나, 표면에 깊은 홈이나 균열이 보이면 교체할 때예요. 보통 패드를 두 번 갈 때 디스크를 한 번 함께 바꾸는 경우가 많습니다.";
   if (/(최소\s?두께|마모\s?한계|min\s?th|minimum)/.test(tt)) return "최소 두께는 디스크가 닳아도 안전하게 쓸 수 있는 <b>한계 두께</b>예요. 디스크 옆면에 'MIN TH 22.4'처럼 새겨져 있고, 이보다 얇아지면 교체해야 합니다.\n상품 카드의 '최소 ○○mm'가 그 값이에요.";
   if (/(연마|재생|면\s?가공|평탄)/.test(tt)) return "디스크 연마(면 가공)는 최소 두께까지 여유가 있을 때만 할 수 있어요. 여유가 적거나 떨림이 다시 생기면 새 디스크로 바꾸시길 권해 드려요.\n연마 의뢰가 가능한지는 상담사가 확인해 드릴게요." + chips([["상담사와 채팅", "#agent"]]);
   if (/(회원|가입|로그인)/.test(tt)) return "회원가입 없이도 검색, 주문, 상담을 모두 이용하실 수 있어요.\n가입하시면 연락처가 자동으로 채워지고 <a href=\"mypage.html\">마이페이지</a>에서 주문과 의뢰 진행 상황을 볼 수 있습니다. <a href=\"signup.html\">회원가입</a>";
@@ -394,9 +394,9 @@ function botReply(text) {
 
   // 홈 가공 성능 질문(예: "가공하면 패드 마모 심해지나요?")은 상담사 연결보다 먼저 연구자료로 답변
   const rqEarly = !text.startsWith("#") && window.ResearchQA && ResearchQA.match(t);
-  if (rqEarly === "improve") { const a = ResearchQA.answer(rqEarly, t); if (a) return say(a.html + chips(a.actions)); }
+  if (rqEarly === "improve") { const a = ResearchQA.answer(rqEarly, t); if (a) return askGemini(text, t, { fallback: a.html + chips(a.actions), chips: RQ_CHIPS }); }
   if (/패드/.test(t) && /(같이|함께|교체|갈아|바꿔|바꾸)/.test(t) && !/(있|팔|구매|주문|가격|얼마)/.test(t))
-    return say("네, 디스크를 바꿀 때는 <b>패드도 함께 바꾸시길</b> 권해 드려요. 쓰던 패드는 이전 디스크 모양대로 닳아 있어서 새 디스크와 잘 맞지 않고, 소음이나 떨림이 생길 수 있어요.\n패드는 상담사가 차종에 맞춰 찾아 드릴게요." + chips([["패드 문의 (상담사)", "#agent"]]));
+    return aiOr(text, t, "네, 디스크를 바꿀 때는 <b>패드도 함께 바꾸시길</b> 권해 드려요. 쓰던 패드는 이전 디스크 모양대로 닳아 있어서 새 디스크와 잘 맞지 않고, 소음이나 떨림이 생길 수 있어요.\n패드는 상담사가 차종에 맞춰 찾아 드릴게요." + chips([["패드 문의 (상담사)", "#agent"]]));
   if (text === "#agent" || NON_DISC.test(t)) return startAgent(text);
 
   if (text === "#inquiry") {
@@ -415,8 +415,9 @@ function botReply(text) {
   if (text === "#rqlist") return say("궁금한 질문을 골라 주십시오. 등록된 논문·시험 자료만 근거로 답변드립니다." + chips(ResearchQA.QUESTIONS.map((q) => [q.q, "#rq:" + q.id])));
   if (text === "#lab") { SiteNav.go("technology.html#chaos-types"); return; }
   if (text === "#tech") { SiteNav.go("technology.html#chaos-types"); return; }
-  const rqId = text.startsWith("#rq:") ? text.slice(4) : window.ResearchQA && ResearchQA.match(t);
-  if (rqId) { const a = ResearchQA.answer(rqId, t); if (a) return say(a.html + chips(a.actions)); }
+  if (text.startsWith("#rq:")) { const a = ResearchQA.answer(text.slice(4), t); if (a) return say(a.html + chips(a.actions)); }
+  const rqId = window.ResearchQA && ResearchQA.match(t);
+  if (rqId) { const a = ResearchQA.answer(rqId, t); if (a) return askGemini(text, t, { fallback: a.html + chips(a.actions), chips: RQ_CHIPS }); }
 
   // 1) 품번
   const pnHit = text.split(/[\s,]+/).map(findPn).find(Boolean);
@@ -448,17 +449,18 @@ function botReply(text) {
     return say(`차대번호는 <b>17자리</b>예요. 입력하신 ${vt.length}자리로는 차량을 정확히 찾기 어려워요.\n자동차등록증이나 운전석 문짝 아래에 적힌 번호를 그대로 입력해 주십시오.`);
 
   // 2-2) 카오스 가공 세부 질문
-  if (/(가공|카오스)/.test(t) && /(기간|며칠|얼마나\s?걸|소요|언제)/.test(t)) return say("가공 일정은 디스크 재고와 작업 물량에 따라 달라요. 가공 의뢰서를 남겨 주시면 담당자가 출고 예정일을 함께 안내드립니다." + chips([["가공 상담 시작", "#consult"]]));
-  if (/(가공|카오스)/.test(t) && /(비용|가격|얼마|금액)|가공비/.test(t)) return say(chaosPriceTable() + chips([["가공 상담 시작", "#consult"]]));
-  if (/(제\s?디스크|내\s?디스크|가지고\s?있|보유|보내서|가공만)/.test(t)) return say("가지고 계신 디스크도 가공할 수 있는지 확인해 드려요. 가공 뒤에도 두께가 충분해야 하고 표면 상태가 좋아야 해서, 가공 상담에서 품번과 사진을 남겨 주시면 담당자가 확인 후 안내드립니다." + chips([["가공 상담 시작", "#consult"]]));
-  if (/(추천|어떤\s?(타입|게|걸|패턴)|뭐가\s?(좋|나아|예뻐|이뻐)|골라)/.test(t) && /(타입|패턴|가공|카오스|디자인|사선)/.test(t)) return say("타입은 취향과 휠 디자인에 맞춰 고르시면 돼요.\n<b>사선 타입</b>: 같은 간격의 직선 홈이라 깔끔하고 무난해요. 처음이시면 가장 많이 고릅니다.\n<b>A 타입</b>: 곡선 홈이 흩어져 있어 개성이 강해요.\n<b>B 타입</b>: V자 홈이 한 방향으로 반복돼 역동적이에요. 회전 방향이 정해져 있어 좌우가 따로 만들어집니다.\n휠 사진을 가공 상담에 올려 주시면 어울리는 타입을 같이 봐 드릴게요." + chips([["디자인 보기", "#lab"], ["가공비 보기", "카오스 가공비 얼마예요?"], ["가공 상담 시작", "#consult"]]));
+  if (/(가공|카오스)/.test(t) && /(기간|며칠|얼마나\s?걸|소요|언제)/.test(t)) return aiOr(text, t, "가공 일정은 디스크 재고와 작업 물량에 따라 달라요. 가공 의뢰서를 남겨 주시면 담당자가 출고 예정일을 함께 안내드립니다." + chips([["가공 상담 시작", "#consult"]]));
+  if (/(가공|카오스)/.test(t) && /(비용|가격|얼마(?!나)|금액)|가공비/.test(t)) return say(chaosPriceTable() + chips([["가공 상담 시작", "#consult"]]));
+  if (/(제\s?디스크|내\s?디스크|가지고\s?있|보유|보내서|가공만)/.test(t)) return aiOr(text, t, "가지고 계신 디스크도 가공할 수 있는지 확인해 드려요. 가공 뒤에도 두께가 충분해야 하고 표면 상태가 좋아야 해서, 가공 상담에서 품번과 사진을 남겨 주시면 담당자가 확인 후 안내드립니다." + chips([["가공 상담 시작", "#consult"]]));
+  if (/(추천|어떤\s?(타입|게|걸|패턴)|뭐가\s?(좋|나아|예뻐|이뻐)|골라)/.test(t) && /(타입|패턴|가공|카오스|디자인|사선)/.test(t)) return aiOr(text, t, "타입은 취향과 휠 디자인에 맞춰 고르시면 돼요.\n<b>사선 타입</b>: 같은 간격의 직선 홈이라 깔끔하고 무난해요. 처음이시면 가장 많이 고릅니다.\n<b>A 타입</b>: 곡선 홈이 흩어져 있어 개성이 강해요.\n<b>B 타입</b>: V자 홈이 한 방향으로 반복돼 역동적이에요. 회전 방향이 정해져 있어 좌우가 따로 만들어집니다.\n휠 사진을 가공 상담에 올려 주시면 어울리는 타입을 같이 봐 드릴게요." + chips([["디자인 보기", "#lab"], ["가공비 보기", "카오스 가공비 얼마예요?"], ["가공 상담 시작", "#consult"]]));
 
   // 2-3) 자주 묻는 질문
+  // 인사·연락처·주문 조회·브랜드처럼 정해진 사실은 바로 답하고, 설명이 필요한 질문은 Gemini가 답합니다(실패 시 기존 답변)
   const fq = faqReply(t, text);
-  if (fq) return say(fq);
+  if (fq) return LOCAL_FIRST.test(t) ? say(fq) : aiOr(text, t, fq);
 
   // 3) 카오스 가공 / 운영 안내
-  if (/(카오스|chaos|가공)/.test(t)) return say("카오스 가공은 현재 <b>제공 중</b>이며, 가공 의뢰를 접수받아 담당자가 검토한 뒤 진행 여부와 가공비를 안내드립니다.\n가공 타입은 <b>사선 타입 · A 타입 · B 타입</b> 세 가지예요. 디스크를 찾은 뒤 상품 카드의 <b>'카오스 가공 함께 의뢰'</b>에서 타입을 고르고 담으시면 디스크와 가공을 한 번에 의뢰할 수 있어요.\n성능이 궁금하시면 관련 논문의 시험 수치로 안내해 드려요." + chips([["가공 상담 바로가기", "#consult"], ["카오스 가공 관련", "#rqlist"], ["담당자 확인 요청", "#inquiry"]]));
+  if (/(카오스|chaos|가공)/.test(t)) return aiOr(text, t, "카오스 가공은 현재 <b>제공 중</b>이며, 가공 의뢰를 접수받아 담당자가 검토한 뒤 진행 여부와 가공비를 안내드립니다.\n가공 타입은 <b>사선 타입 · A 타입 · B 타입</b> 세 가지예요. 디스크를 찾은 뒤 상품 카드의 <b>'카오스 가공 함께 의뢰'</b>에서 타입을 고르고 담으시면 디스크와 가공을 한 번에 의뢰할 수 있어요.\n성능이 궁금하시면 관련 논문의 시험 수치로 안내해 드려요." + chips([["가공 상담 바로가기", "#consult"], ["카오스 가공 관련", "#rqlist"], ["담당자 확인 요청", "#inquiry"]]));
   if (text === "#consult") { SiteNav.go("consult.html"); return; }
 
   // 4) 섀시코드 직접 입력 (W213, G30, F10 …)
@@ -522,8 +524,13 @@ function botReply(text) {
 // ---------------- AI 답변 (Google Gemini, 서버 /api/chat 경유) ----------------
 // 위의 검색·자주 묻는 질문으로 답하지 못한 질문만 보냅니다. 실패하면 기존 안내로 돌아갑니다.
 const aiHistory = [];
+const LOCAL_FIRST = /(^\s*(안녕|하이|hi|hello|헬로|반갑)|감사|고마|고맙|땡큐|thank|누구(세요|야|신가요)|챗봇|상담원|상담사|직원|담당자|영업\s?시간|운영\s?시간|전화|연락처|이메일|주소|어디쯤|조회|송장|취소)/;
+const RQ_CHIPS = [["외부 연구 결과 보기", "#rq:improve"], ["가공 상담 시작", "#consult"]];
+// 기존 답변(localHtml)을 준비해 두고 Gemini에게 먼저 묻습니다. Gemini가 실패하면 기존 답변을 보여 줍니다.
+const aiOr = (text, t, localHtml) => askGemini(text, t, { fallback: localHtml });
 const aiFormat = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^\s*[*-]\s+/gm, "· ");
-async function askGemini(text, t) {
+async function askGemini(text, t, opts = {}) {
+  if (!opts.chips && /(카오스|chaos|가공)/.test(t)) opts.chips = RQ_CHIPS; // 가공 질문에는 외부 연구·가공 상담 버튼
   const wait = document.createElement("div");
   wait.className = "msg bot ai-wait";
   wait.textContent = "답변을 준비하고 있어요…";
@@ -539,14 +546,14 @@ async function askGemini(text, t) {
     const data = await r.json().catch(() => ({}));
     wait.remove();
     if (!r.ok || !data.reply) {
-      if (r.status === 429) return say("지금 AI 상담 요청이 많아 잠시 답변하기 어려워요. 잠시 후 다시 물어보시거나 상담사와 채팅해 주십시오." + chips([["상담사와 채팅", "#agent"]]));
-      return fallbackReply(text, t);
+      if (r.status === 429 && !opts.fallback) return say("지금 AI 상담 요청이 많아 잠시 답변하기 어려워요. 잠시 후 다시 물어보시거나 상담사와 채팅해 주십시오." + chips([["상담사와 채팅", "#agent"]]));
+      return opts.fallback ? say(opts.fallback) : fallbackReply(text, t);
     }
     aiHistory.push({ role: "user", text }, { role: "model", text: data.reply });
-    say(aiFormat(data.reply) + `<span class="ai-note">AI 답변이에요. 주문·적용 여부는 담당자가 최종 확인합니다.</span>` + chips([["상담사와 채팅", "#agent"]]));
+    say(aiFormat(data.reply) + `<span class="ai-note">AI 답변이에요. 주문·적용 여부는 담당자가 최종 확인합니다.</span>` + chips([...(opts.chips || []), ["상담사와 채팅", "#agent"]]));
   } catch (e) {
     wait.remove();
-    fallbackReply(text, t);
+    opts.fallback ? say(opts.fallback) : fallbackReply(text, t);
   }
 }
 

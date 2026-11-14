@@ -288,8 +288,8 @@ let agentSeen = 0;
 const inHours = () => { const d = new Date(), h = d.getHours(); return d.getDay() !== 0 && h >= 9 && h < 18; }; // 월~토 09~18시
 function setAgentHeader(on) {
   $("#chat .chat-head div").innerHTML = on
-    ? '<b>상담사 채팅</b><span class="muted small">카리브무역 상담사가 직접 답변합니다 · 월~토 오전 9시~오후 6시</span>'
-    : '<b>AI 상담</b><span class="muted small">부품 찾기부터 궁금한 점까지 답변합니다</span>';
+    ? '<b>상담사 채팅</b><span class="muted small">카리브무역 상담사가 직접 답변해 드립니다 · 월~토 오전 9시~오후 6시</span>'
+    : '<b>AI 상담</b><span class="muted small">부품 찾기부터 궁금한 점까지 답변해 드립니다</span>';
   $("#chatText").placeholder = on ? "상담사에게 보낼 메시지를 입력하십시오" : "예: 벤츠 W213 뒤 디스크 / 차대번호 / 품번";
   $("#chat").classList.toggle("agent-mode", on);
 }

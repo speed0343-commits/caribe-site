@@ -156,7 +156,7 @@ function localAnswer(text) {
     return { html: "가공비는 사선 타입 66,000원부터, A 타입 88,000원부터, B 타입 110,000원부터(2장 1세트, VAT 포함)이며 디스크 외경에 따라 달라집니다. 디스크와 가공 타입을 고르시면 금액을 바로 알려 드릴게요." };
   }
   if (/(차대번호|vin).*(어디|위치|확인)/.test(t)) return { exact: true, html: "차대번호는 자동차등록증의 '차대번호' 칸이나 앞유리 왼쪽 하단에서 확인할 수 있습니다." };
-  if (/(카오스|효과|성능|좋아|차이)/.test(t)) return { html: "카오스 가공은 현재 <b>주문을 받고 있습니다</b>. 타입별 차이는 홈의 모양과 배치(외관)입니다.\n의뢰서를 남겨 주시면 담당자가 진행 가능 여부를 안내드립니다." + chips([["외부 연구 결과 보기", "#rq:improve"]]) };
+  if (/(카오스|효과|성능|좋아|차이)/.test(t)) return { html: "카오스 가공은 현재 <b>주문을 받고 있습니다</b>. 타입별 차이는 홈의 모양과 배치(외관)입니다.\n의뢰서를 남겨 주시면 담당자가 진행 가능 여부를 안내드립니다." + chips([["디자인 보기", "#lab"]]) };
   if (/(기간|며칠|언제|오래)/.test(t)) return { html: "작업 기간은 디스크 수급과 가공 일정에 따라 달라, 의뢰서 확인 후 담당자가 안내드립니다." };
   if (/(보증|as|a\/s|환불|반품|교환)/.test(t)) return { html: "교환·반품은 먼저 담당자에게 연락 주시면 상품 상태와 장착·가공 여부를 확인해 방법을 안내드립니다." };
   return null;
@@ -234,8 +234,11 @@ function handle(raw) {
   // 연구자료 질문 버튼 (현재 단계는 그대로 유지)
   if (v === "#rqlist") return say("궁금한 질문을 골라 주십시오. 등록된 논문·시험 자료만 근거로 답변드립니다." + chips(ResearchQA.QUESTIONS.map((q) => [q.q, "#rq:" + q.id])));
   if (v.startsWith("#rq:")) return sayResearch(v.slice(4));
-  if (v === "#lab") { SiteNav.go("technology.html#chaos-types"); return; }
-  if (v === "#tech") { SiteNav.go("technology.html#chaos-types"); return; }
+  // 디자인(가공 타입) 보기: 상담 내용이 사라지지 않게 새 탭으로 열고, 새 탭이 막히면 이 탭에서 이동
+  if (v === "#lab" || v === "#tech") {
+    if (!window.open("technology.html#chaos-types", "_blank")) SiteNav.go("technology.html#chaos-types");
+    return;
+  }
   if (v === "#inquiry") { $("#toInquiry").click(); return; }
   if (v === "#rqcont") {
     if (S.step === "vehicle") return say("이어서 차량을 확인할게요. <b>차대번호 17자리</b>나 차종(예: 벤츠 W213, BMW 5시리즈)을 입력해 주십시오." + chips([["차대번호를 몰라요", "#novin"]]));

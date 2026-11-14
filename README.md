@@ -46,9 +46,10 @@ python3 -m http.server 3000
 
 - API 키: Vercel 프로젝트의 환경 변수 `GEMINI_API_KEY` (코드나 저장소에 넣지 않음)
 - 모델 변경: 환경 변수 `GEMINI_MODEL` (기본값 `gemini-flash-lite-latest`)
-- 상담원 지침(회사 정보·정책): `api/chat.js`의 `SYSTEM_PROMPT`
+- 상담 기준 문서(지식베이스): `docs/ai-knowledge.md` — 이 파일을 고치고 올리면 AI 답변 기준이 바뀝니다
+- 사이트 공식 정보(연락처·가격·결제·배송): `api/chat.js`의 `SITE_FACTS` — 지식베이스와 다르면 이쪽이 우선
 - 키가 없거나 할당량을 넘으면 기존 안내 문구로 답합니다.
-- 전화번호와 이메일은 Gemini로 보내기 전에 가립니다.
+- 차대번호, 전화번호, 이메일은 Gemini로 보내기 전에 가립니다.
 
 로컬에서 AI까지 시험하려면 (PowerShell):
 

@@ -20,9 +20,17 @@ try {
 } catch (e) {
   console.error("knowledge base missing:", e.message);
 }
+// 브레이크·차량 부품 일반 지식: docs/ai-parts-guide.md (원리·증상·교체 시기·다른 부품 설명용). 회사 정책은 위 지식베이스와 공식 정보가 우선.
+let PARTS_GUIDE = "";
+try {
+  PARTS_GUIDE = require("fs").readFileSync(require("path").join(__dirname, "..", "docs", "ai-parts-guide.md"), "utf8");
+} catch (e) {
+  console.error("parts guide missing:", e.message);
+}
 
 // 사이트에 공개된 공식 정보. 지식베이스와 다르면 이 내용을 따른다.
 const SITE_FACTS = `- 회사: (주)카리브무역. 수입차 브레이크 디스크 판매와 디스크 마찰면 "카오스 가공"(홈 패턴 가공). 국산차 디스크는 사이트에 등록돼 있지 않다(필요하면 상담사가 조달 가능 여부를 확인).
+- 디스크 외 수입차 정비 부품(패드·패드 센서·브레이크 오일·캘리퍼·필터·배터리 등)도 취급하지만 사이트에는 등록돼 있지 않다. 구매·재고·가격은 상담사가 차종(가능하면 차대번호)에 맞춰 조달 여부와 가격을 확인한다.
 - 연락처: 전화 010-5459-3111 / 이메일 caribetrading@naver.com / 울산광역시 북구 진장로 16
 - 영업일: 월요일~토요일 09:00~18:00, 일요일 휴무. 상담·출고·가공 작업은 영업일에 진행한다. 영업시간 밖에 남긴 문의는 다음 영업일에 순서대로 답한다.
 - 판매 단위: 디스크 2장 1세트, 사이트 표시 가격은 VAT 포함. 배송비 무료. 제주·도서산간도 배송(추가 비용이 있으면 주문 확인 때 안내).
@@ -44,6 +52,8 @@ const SYSTEM_PROMPT = `너는 (주)카리브무역 홈페이지의 브레이크 
 - 너는 상품 DB를 직접 조회하지 못한다. 상품 검색은 이 상담창의 검색 기능이 따로 한다.
 - 고객이 디스크를 찾거나 디스크 가격을 물을 때만, 이 상담창에 "차종과 위치(예: 벤츠 W213 앞 디스크)", "기존 디스크 OEM 품번" 또는 "차대번호 17자리"를 입력하면 등록된 상품과 가격이 바로 나온다고 한 문장으로 안내한다. 그 밖의 질문에는 이 검색 안내를 붙이지 않는다.
 - (참고: 고객이 상담 중인 차량)이 있으면 차량을 이미 알고 있는 것이다. 차종·품번·차대번호를 다시 입력하라고 하지 않는다.
+- 디스크 외 부품(패드·센서·브레이크 오일·캘리퍼·필터·배터리·서스펜션 등)을 물으면 [부품 일반 지식]으로 원리·증상·교체 시기를 짧게 설명한다. 구매·재고·가격을 물으면 사이트에 등록돼 있지 않아 상담사가 차종에 맞춰 조달 여부와 가격을 확인한다고 한 문장으로 안내한다.
+- 원리·증상·교체 시기 같은 설명 질문은 [부품 일반 지식]을 근거로 고객 상황(차량, 증상)에 맞는 부분을 골라 답한다. 대화에서 이미 한 말은 반복하지 말고 새 정보나 다른 측면을 준다.
 - 지식베이스 9장의 상담원 연결 기준에 해당하면 단정하지 말고 "상담사와 채팅" 버튼이나 전화 연결을 권한다.
 - 고객 메시지의 [차대번호], [전화번호], [이메일]은 개인정보 보호를 위해 가려진 것이다. 그 값을 묻거나 추측하거나 다시 적지 않는다.
 
@@ -60,7 +70,10 @@ const SYSTEM_PROMPT = `너는 (주)카리브무역 홈페이지의 브레이크 
 ${SITE_FACTS}
 
 [지식베이스]
-${KNOWLEDGE || "(지식베이스를 불러오지 못했다. 사이트 공식 정보만 사용하고, 그 밖의 내용은 담당자 확인으로 안내한다.)"}`;
+${KNOWLEDGE || "(지식베이스를 불러오지 못했다. 사이트 공식 정보만 사용하고, 그 밖의 내용은 담당자 확인으로 안내한다.)"}
+
+[부품 일반 지식]
+${PARTS_GUIDE || "(부품 일반 지식을 불러오지 못했다. 일반 정비 상식 수준으로만 짧게 답하고, 차종별 수치는 말하지 않는다.)"}`;
 
 // 가공 상담 페이지(consult.html)에서 보낸 질문일 때 덧붙이는 지시 (body.mode === "consult")
 const CONSULT_PROMPT = `
@@ -121,7 +134,7 @@ async function callGemini(model, key, contents, system) {
 
 module.exports = async function handler(req, res) {
   // GET: 설정 상태 점검용 (키 값이나 지침 내용은 내보내지 않음)
-  if (req.method === "GET") return send(res, 200, { ok: true, configured: !!process.env.GEMINI_API_KEY, knowledge: KNOWLEDGE.length > 0 });
+  if (req.method === "GET") return send(res, 200, { ok: true, configured: !!process.env.GEMINI_API_KEY, knowledge: KNOWLEDGE.length > 0, partsGuide: PARTS_GUIDE.length > 0 });
   if (req.method !== "POST") return send(res, 405, { error: "method_not_allowed" });
 
   const origin = req.headers.origin || "";

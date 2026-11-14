@@ -401,7 +401,6 @@
 /* 동의 체크박스가 입력칸처럼 100% 폭으로 늘어나 글과 떨어져 보이던 문제 */
 .cb .inquiry-form .check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; }
 .cb .inquiry-form .check input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; flex: none; margin: 1px 0 0; padding: 0; accent-color: #0b6e4f; }
-=======
 /* ---------- AI 상담창 화면 개선 (2026-11-14) ---------- */
 /* 상담창·장바구니가 상단 메뉴(z-index 60) 아래로 깔려 휴대폰에서 제목과 닫기 버튼이 가려지던 문제 */
 .cb .chat, .cb .drawer { z-index: 70; }

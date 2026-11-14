@@ -57,6 +57,16 @@ ${SITE_FACTS}
 [지식베이스]
 ${KNOWLEDGE || "(지식베이스를 불러오지 못했다. 사이트 공식 정보만 사용하고, 그 밖의 내용은 담당자 확인으로 안내한다.)"}`;
 
+// 가공 상담 페이지(consult.html)에서 보낸 질문일 때 덧붙이는 지시 (body.mode === "consult")
+const CONSULT_PROMPT = `
+
+[가공 상담 페이지 모드 — 이번 대화에만 적용]
+- 고객은 지금 "가공 상담" 페이지에서 단계별 질문(차량 → 디스크 → 수량 → 가공 타입 → 사용 환경 → 증상 → 요청 사항 → 일정 → 연락처)에 답하며 카오스 가공 의뢰서를 만드는 중이다. 진행 중인 단계와 지금까지 정리된 내용은 메시지 끝 (참고: …)에 있다.
+- 고객의 질문에만 2~4문장으로 짧게 답한다. "이어서 위 질문에 답해 주세요" 같은 단계 안내 문구는 화면이 따로 붙이므로 쓰지 않는다.
+- 차량·디스크 확인과 가공비 계산은 화면이 등록 데이터로 한다. 등록 데이터 밖의 적용 여부·가공 가능 여부·일정은 단정하지 말고, 의뢰서를 남기면 담당자가 검토해 연락한다고 안내한다.
+- 이 페이지에는 "상담사와 채팅" 버튼이 없다. 상담원 연결이 필요하면 전화(010-5459-3111)나 "상담 대신 문의 남기기" 버튼을 안내한다.
+- 연락처는 마지막 단계의 입력란에서 받으므로 채팅에 개인정보를 적게 하지 않는다.`;
+
 const hits = new Map();
 function rateLimited(ip) {
   const now = Date.now();
@@ -89,12 +99,12 @@ async function readBody(req) {
   return JSON.parse(raw || "{}");
 }
 
-async function callGemini(model, key, contents) {
+async function callGemini(model, key, contents, system) {
   const r = await fetch(API + encodeURIComponent(model) + ":generateContent", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      systemInstruction: { parts: [{ text: system }] },
       contents,
       generationConfig: { temperature: 0.3, maxOutputTokens: 1024 },
     }),
@@ -135,19 +145,22 @@ module.exports = async function handler(req, res) {
     else contents.push(h);
   }
   if (contents.length && contents[contents.length - 1].role === "user") contents.pop();
+  const consult = body.mode === "consult";
+  const system = consult ? SYSTEM_PROMPT + CONSULT_PROMPT : SYSTEM_PROMPT;
   const car = typeof body.car === "string" && body.car.trim() ? `\n(참고: 고객이 상담 중인 차량 — ${mask(body.car).slice(0, 80)})` : "";
-  contents.push({ role: "user", parts: [{ text: message + car }] });
+  const ctx = consult && typeof body.context === "string" && body.context.trim() ? `\n(참고: 가공 상담 진행 상황 — ${mask(body.context).slice(0, 300)})` : "";
+  contents.push({ role: "user", parts: [{ text: message + car + ctx }] });
 
   for (const model of MODELS) {
     try {
       const started = Date.now();
-      const { status, data } = await callGemini(model, key, contents);
+      const { status, data } = await callGemini(model, key, contents, system);
       if (status === 404) continue; // 모델 이름이 바뀐 경우 다음 후보로
       if (status === 429) { console.warn("gemini quota", model); return send(res, 429, { error: "quota" }); }
       if (status !== 200) { console.error("gemini", model, status, JSON.stringify(data).slice(0, 300)); return send(res, 502, { error: "upstream" }); }
       const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
       if (!text) { console.error("gemini", model, "empty reply", data.candidates?.[0]?.finishReason); return send(res, 502, { error: "empty_reply" }); }
-      console.log("gemini ok", model, Date.now() - started + "ms");
+      console.log("gemini ok", consult ? "consult" : "chat", model, Date.now() - started + "ms");
       return send(res, 200, { reply: text.slice(0, 2000), model });
     } catch (e) {
       console.error("gemini", model, e && e.message);

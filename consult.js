@@ -1,7 +1,7 @@
 // ============================================================
 // AI 가공 상담 → 요구사항 정리 → 가공 의뢰서 생성 → 저장
-// 1차: 규칙 기반 단계형 상담. 2차: aiAssist() 자리에 서버의 Claude API를 연결
-//      (Claude는 matchVin/findPn/rowsFor 결과 안에서만 답하도록 제한)
+// 단계 진행·차량 확인·가공비 계산은 등록 데이터로 처리하고, 중간에 나온 질문은
+// 서버 /api/chat(mode: "consult")을 거쳐 Google Gemini가 답합니다. 실패하면 기존 안내 문구로 답합니다.
 // 의뢰 방식(새 디스크 구매+가공 / 보유 디스크 가공)과 가공비는 추후 확정 → 의뢰서에 "추후 확정" 표기
 // ============================================================
 
@@ -30,9 +30,10 @@ function reset() {
     contact: { name: "", phone: "", email: "" },
     log: [],
   };
+  aiHistory.length = 0;
+  setBusy(false);
   $("#log").innerHTML = "";
   $("#docArea").innerHTML = "";
-  $("#text").disabled = false;
   renderSummary();
   say("안녕하세요, 카리브무역 카오스 가공 상담입니다.\n먼저 차량을 확인할게요. <b>차대번호 17자리</b>를 입력해 주십시오.\n모르시면 차종(예: 벤츠 W213, BMW 5시리즈)이나 디스크 OEM 품번으로도 됩니다." +
     chips([["차대번호를 몰라요", "#novin"], ["예시 차대번호로 해보기", "WDD2130421A123456"]].concat(window.ResearchQA ? [["카오스 가공 관련", "#rqlist"]] : [])));
@@ -54,10 +55,16 @@ function say(html, who = "bot") {
   const d = document.createElement("div");
   d.className = "msg " + who;
   if (who === "me") d.textContent = html; else d.innerHTML = html;
-  logEl().appendChild(d);
-  logEl().scrollTop = logEl().scrollHeight;
+  scrollToMsg(d, who);
   S.log.push({ who, text: who === "me" ? html : d.innerText.trim(), at: new Date().toISOString() });
   return d;
+}
+// 긴 답변은 답변의 처음이 보이게, 짧은 답변은 맨 아래로
+function scrollToMsg(d, who) {
+  const log = logEl();
+  if (d.parentNode !== log) log.appendChild(d);
+  if (who !== "me" && d.offsetHeight > log.clientHeight * 0.8) log.scrollTop += d.getBoundingClientRect().top - log.getBoundingClientRect().top - 8;
+  else log.scrollTop = log.scrollHeight;
 }
 const chips = (items) => `<div class="chips">${items.map(([label, val]) => `<button type="button" data-v="${esc(val)}">${esc(label)}</button>`).join("")}</div>`;
 
@@ -71,7 +78,8 @@ function renderSummary() {
   ];
   $("#summary").innerHTML = items.map(([k, x]) => `<dt>${k}</dt><dd class="${x ? "" : "empty-v"}">${v(x)}</dd>`).join("");
   const idx = STEPS.findIndex((s) => s.key === S.step);
-  $("#progress").innerHTML = STEPS.map((s, i) => `<i class="${i < idx || S.step === "done" ? "done" : ""}" title="${s.label}"></i>`).join("");
+  $("#progress").innerHTML = STEPS.map((s, i) => `<i class="${i < idx || S.step === "done" ? "done" : i === idx ? "now" : ""}" title="${s.label}"></i>`).join("") +
+    `<span class="step-label">${S.step === "done" ? "의뢰서 완료" : `${idx + 1}/${STEPS.length} · ${STEPS[idx].label}`}</span>`;
 }
 
 // ---------------- 단계 진행 ----------------
@@ -82,7 +90,7 @@ function go(step) {
   if (step === "qty") return say("몇 세트가 필요하신가요? 디스크는 <b>2장 1세트</b>(한 축 좌·우)로 판매합니다." + chips([["1세트 · 2장 (한 축)", "#qty:1세트 · 2장 (한 축)"], ["2세트 · 4장 (앞·뒤)", "#qty:2세트 · 4장 (앞·뒤)"]]) + '<p class="muted small" style="margin:6px 0 0">그 외 수량은 세트 수(숫자)로 입력해 주십시오.</p>');
   if (step === "ctype") return say("원하시는 <b>카오스 가공 타입</b>을 골라 주십시오." + `<div class="type-chips">${CHAOS_TYPES.map((t) => `<button type="button" data-v="#ctype:${t.code}"><img src="assets/${t.key === "diag" ? "chaos-diag.jpg" : t.key === "A" ? "chaos-type-a.jpg" : "chaos-type-b.jpg"}" alt="" />${esc(t.name)}</button>`).join("")}</div>` + chips([["상담 후 결정", "#ctype:"]]) + `<p class="muted small" style="margin:6px 0 0">타입별 모양은 <a href="technology.html#chaos-types" target="_blank">카오스 가공 페이지</a>에서 크게 볼 수 있어요.</p>`);
   if (step === "usage") return say("차량은 주로 어떻게 사용하시나요?" + chips(USAGE.map((u) => [u, "#usage:" + u])));
-  if (step === "symptoms") { S.picked = []; return say("현재 브레이크에 느껴지는 증상을 모두 골라 주십시오. 다 고르셨으면 <b>선택 완료</b>를 눌러 주십시오." + chips(SYMPTOMS.map((x) => [x, "#sym:" + x]).concat([["선택 완료", "#symdone"]]))); }
+  if (step === "symptoms") { S.picked = []; S.needs.symptoms = ""; renderSummary(); return say("현재 브레이크에 느껴지는 증상을 모두 골라 주십시오. 다 고르셨으면 <b>선택 완료</b>를 눌러 주십시오." + chips(SYMPTOMS.map((x) => [x, "#sym:" + x]).concat([["선택 완료", "#symdone"]]))); }
   if (step === "request") return say("가공과 관련해 요청하실 내용이 있으면 자유롭게 적어 주십시오.\n(예: 원하는 마감, 납품처, 함께 필요한 부품)" + chips([["특별히 없음", "#req:없음"], ["상담 후 결정", "#req:담당자 상담 후 결정"]]));
   if (step === "schedule") return say("희망하시는 일정이 있나요?" + chips(SCHEDULE.map((x) => [x, "#sch:" + x])));
   if (step === "contact") return askContact();
@@ -126,8 +134,7 @@ function askContact() {
   } else {
     cf.insertAdjacentHTML("afterbegin", `<p class="member-note"><a href="login.html?next=consult.html">로그인</a>하면 연락처가 자동 입력되고 진행 상황을 마이페이지에서 볼 수 있습니다. (비회원도 의뢰 가능)</p>`);
   }
-  logEl().appendChild(d);
-  logEl().scrollTop = logEl().scrollHeight;
+  scrollToMsg(d, "bot");
   d.querySelector("form").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target;
@@ -138,24 +145,85 @@ function askContact() {
 }
 
 // ---------------- 질문 응답 (어느 단계에서든) ----------------
-// 2차: 이 함수 안에서 서버 /api/consult 로 Claude API를 호출하도록 교체
-function aiAssist(text) {
+// 등록 데이터로 정확히 답할 수 있는 질문(선택한 디스크의 가공비, 차대번호 위치)은 바로 답하고,
+// 나머지는 Gemini에 묻습니다. localAnswer의 html은 Gemini가 실패했을 때의 대체 답변입니다.
+function localAnswer(text) {
   const t = text.toLowerCase();
-  if (/(카오스|효과|성능|좋아|차이)/.test(t)) {
-    const r = window.ResearchQA && ResearchQA.answer("improve", t);
-    if (r && /(효과|성능|좋아|차이)/.test(t)) return r.html;
-    return "카오스 가공은 현재 <b>제공 중</b>입니다. 타입별 차이는 홈의 형상과 배치입니다.\n의뢰서를 남겨 주시면 담당자가 진행 가능 여부를 안내드립니다." + chips([["외부 연구 결과 보기", "#rq:improve"]]);
-  }
   if (/(가격|비용|얼마|가공비)/.test(t)) {
     const p = S.disc.pn && findPn(S.disc.pn);
     const co = p && S.needs.ctypeCode ? chaosOption(p, S.needs.ctypeCode) : null;
-    if (co && co.price) return `선택하신 디스크(Ø${esc(p.dia)}mm)의 ${esc(co.name)} 가공비는 2장 1세트 <b>${won(co.price * SET_SIZE)}</b>(${esc(PRICE_NOTE)})입니다. 최종 금액은 담당자 검토 후 확정됩니다.`;
-    return "가공비는 디스크 규격과 요구사항을 검토한 뒤 안내드립니다. 의뢰서에는 \"검토 후 안내\"로 표시됩니다.";
+    if (co && co.price) return { exact: true, html: `선택하신 디스크(Ø${esc(p.dia)}mm)의 ${esc(co.name)} 가공비는 2장 1세트 <b>${won(co.price * SET_SIZE)}</b>(${esc(PRICE_NOTE)})입니다. 최종 금액은 담당자 검토 후 확정됩니다.` };
+    return { html: "가공비는 사선 타입 66,000원부터, A 타입 88,000원부터, B 타입 110,000원부터(2장 1세트, VAT 포함)이며 디스크 외경에 따라 달라집니다. 디스크와 가공 타입을 고르시면 금액을 바로 알려 드릴게요." };
   }
-  if (/(기간|며칠|언제|오래)/.test(t)) return "작업 기간은 디스크 수급과 가공 일정에 따라 달라, 의뢰서 확인 후 담당자가 안내드립니다.";
-  if (/(보증|as|a\/s|환불|반품)/.test(t)) return "보증·반품 조건은 운영 정책이 확정되는 대로 안내드립니다.";
-  if (/(차대번호|vin).*(어디|위치|확인)/.test(t)) return "차대번호는 자동차등록증의 '차대번호' 칸이나 앞유리 왼쪽 하단에서 확인할 수 있습니다.";
+  if (/(차대번호|vin).*(어디|위치|확인)/.test(t)) return { exact: true, html: "차대번호는 자동차등록증의 '차대번호' 칸이나 앞유리 왼쪽 하단에서 확인할 수 있습니다." };
+  if (/(카오스|효과|성능|좋아|차이)/.test(t)) return { html: "카오스 가공은 현재 <b>주문을 받고 있습니다</b>. 타입별 차이는 홈의 모양과 배치(외관)입니다.\n의뢰서를 남겨 주시면 담당자가 진행 가능 여부를 안내드립니다." + chips([["디자인 보기", "#lab"]]) };
+  if (/(기간|며칠|언제|오래)/.test(t)) return { html: "작업 기간은 디스크 수급과 가공 일정에 따라 달라, 의뢰서 확인 후 담당자가 안내드립니다." };
+  if (/(보증|as|a\/s|환불|반품|교환)/.test(t)) return { html: "교환·반품은 먼저 담당자에게 연락 주시면 상품 상태와 장착·가공 여부를 확인해 방법을 안내드립니다." };
   return null;
+}
+
+const QUESTION = /[?？]|(뭐|무엇|무슨|얼마|어떻게|어떤|언제|왜|가능|되나요|인가요|있나요|없나요|할까요|일까요|나요$|까요$|궁금|알려|설명)/;
+// 질문처럼 보여도 차량·품번·외경이 들어 있으면 단계 답변으로 처리 (예: "W213도 되나요?")
+function hasStepData(v) {
+  if (findPn(v)) return true;
+  if (S.step === "disc") return /\d{3}\s*mm/i.test(v);
+  if (S.step !== "vehicle") return false;
+  const up = v.toUpperCase();
+  if (/\b[A-HJ-NPR-Z0-9]{11,17}\b/.test(up.replace(/[\s-]/g, "")) && /\d/.test(up)) return true;
+  if ((up.match(/\b[A-Z]{1,2}\d{2,3}[A-Z]?\b/g) || []).some((c) => CHASSIS.has(c))) return true;
+  const t = v.toLowerCase();
+  return MODEL_ALIASES.some(([words]) => words.some((w) => t.includes(w))) || Object.values(MAKE_WORDS).some((ws) => ws.some((w) => t.includes(w)));
+}
+
+// 진행 상황 요약 (차대번호·연락처는 보내지 않음)
+function consultContext() {
+  const idx = STEPS.findIndex((x) => x.key === S.step);
+  const car = [makeKo(S.vehicle.make || ""), S.vehicle.model].filter(Boolean).join(" ");
+  return [
+    idx >= 0 && `현재 단계 ${idx + 1}/${STEPS.length} ${STEPS[idx].label}`,
+    car && `차량 ${car}`,
+    S.disc.pn && `디스크 OEM ${S.disc.pn}`, S.disc.spec && S.disc.spec, S.disc.qty && `수량 ${S.disc.qty}`,
+    S.needs.ctype && `가공 타입 ${S.needs.ctype}`, S.needs.usage && `사용 환경 ${S.needs.usage}`, S.needs.symptoms && `증상 ${S.needs.symptoms}`,
+  ].filter(Boolean).join(" / ");
+}
+
+const aiHistory = [];
+let busy = false;
+function setBusy(on) {
+  busy = on;
+  $("#text").disabled = !!(S && S.step === "done"); // 기다리는 동안에도 다음 질문은 미리 적을 수 있게
+  $("#form button").disabled = on;
+  $("#form").classList.toggle("busy", on);
+}
+const aiFormat = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^\s*[*-]\s+/gm, "· ");
+const CONTINUE = chips([["이어서 상담하기", "#rqcont"]]);
+
+async function askGemini(text, fallbackHtml) {
+  const wait = document.createElement("div");
+  wait.className = "msg bot ai-wait";
+  wait.setAttribute("role", "status");
+  wait.innerHTML = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>답변을 준비하고 있어요';
+  scrollToMsg(wait, "bot");
+  setBusy(true);
+  let r, data = {};
+  try {
+    r = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "consult", message: text, history: aiHistory.slice(-6), context: consultContext() }),
+    });
+    data = await r.json().catch(() => ({}));
+  } catch (e) { r = null; }
+  wait.remove();
+  setBusy(false);
+  $("#text").focus();
+  if (r && r.ok && data.reply) {
+    aiHistory.push({ role: "user", text }, { role: "model", text: data.reply });
+    return say(aiFormat(data.reply) + '<span class="ai-note">AI 답변이에요. 가공 가능 여부와 비용은 담당자가 최종 확인합니다.</span>' + CONTINUE);
+  }
+  if (fallbackHtml) return say(fallbackHtml + CONTINUE);
+  if (r && r.status === 429) return say("지금 AI 상담 요청이 많아 잠시 답변하기 어려워요. 잠시 후 다시 물어보시거나 전화(010-5459-3111)로 문의해 주십시오." + CONTINUE);
+  say("그 질문은 의뢰서를 남겨 주시면 담당자가 함께 확인해 안내드릴게요. 급하시면 전화(010-5459-3111)로 문의해 주십시오." + CONTINUE);
 }
 
 // ---------------- 입력 처리 ----------------
@@ -166,8 +234,11 @@ function handle(raw) {
   // 연구자료 질문 버튼 (현재 단계는 그대로 유지)
   if (v === "#rqlist") return say("궁금한 질문을 골라 주십시오. 등록된 논문·시험 자료만 근거로 답변드립니다." + chips(ResearchQA.QUESTIONS.map((q) => [q.q, "#rq:" + q.id])));
   if (v.startsWith("#rq:")) return sayResearch(v.slice(4));
-  if (v === "#lab") { SiteNav.go("technology.html#chaos-types"); return; }
-  if (v === "#tech") { SiteNav.go("technology.html#chaos-types"); return; }
+  // 디자인(가공 타입) 보기: 상담 내용이 사라지지 않게 새 탭으로 열고, 새 탭이 막히면 이 탭에서 이동
+  if (v === "#lab" || v === "#tech") {
+    if (!window.open("technology.html#chaos-types", "_blank")) SiteNav.go("technology.html#chaos-types");
+    return;
+  }
   if (v === "#inquiry") { $("#toInquiry").click(); return; }
   if (v === "#rqcont") {
     if (S.step === "vehicle") return say("이어서 차량을 확인할게요. <b>차대번호 17자리</b>나 차종(예: 벤츠 W213, BMW 5시리즈)을 입력해 주십시오." + chips([["차대번호를 몰라요", "#novin"]]));
@@ -175,12 +246,21 @@ function handle(raw) {
     return go(S.step);
   }
 
+  // 앞 단계 메시지에 남아 있는 버튼을 누른 경우: 엉뚱한 칸에 기록하지 않고 지금 단계 질문을 다시 보여 줌
+  const STEP_BUTTONS = { vehicle: ["#novin", "#code:", "#group:"], disc: ["#pn:"], qty: ["#qty:"], ctype: ["#ctype:"], usage: ["#usage:"], symptoms: ["#sym:", "#symdone"], request: ["#req:"], schedule: ["#sch:"], contact: [], done: [] };
+  if (v.startsWith("#") && !(STEP_BUTTONS[S.step] || []).some((x) => v.startsWith(x))) {
+    if (S.step === "done") return;
+    say("앞 단계의 버튼이에요. 지금 단계부터 이어서 답해 주십시오.");
+    return handle("#rqcont");
+  }
+
   // 버튼 값(#)이 아닌 질문형 입력은 먼저 질문 응답 시도 → 현재 단계 유지
   const rq = !v.startsWith("#") && window.ResearchQA && ResearchQA.match(v);
   if (rq && S.step !== "request" && S.step !== "contact") return sayResearch(rq, v);
-  if (!v.startsWith("#") && /[?？]|(뭐|무엇|얼마|어떻게|언제|가능|되나요|인가요)/.test(v) && S.step !== "request") {
-    const a = aiAssist(v);
-    if (a) return say(a + '<p class="muted small" style="margin:6px 0 0">이어서 위 질문에 답해 주십시오.</p>');
+  if (!v.startsWith("#") && QUESTION.test(v) && S.step !== "request" && S.step !== "done" && !hasStepData(v)) {
+    const a = localAnswer(v);
+    if (a && a.exact) return say(a.html + CONTINUE);
+    return askGemini(v, a && a.html);
   }
 
   if (S.step === "vehicle") return handleVehicle(v);
@@ -282,8 +362,6 @@ function handleVehicle(v) {
     const groups = [...new Set(rowsFor({ make }).map((r) => r.group))];
     if (groups.length) return say(`${esc(makeKo(make))} 모델을 골라 주십시오.` + chips(groups.slice(0, 16).map((g) => [g, `#group:${make}|${g}`])));
   }
-  const a = aiAssist(v);
-  if (a) return say(a);
   S.vehicle.model = v;
   say("등록 데이터에서 차량을 찾지 못했어요. 차대번호 17자리나 차종(예: 벤츠 W213, BMW G30)으로 다시 알려주시거나, 입력하신 내용 그대로 진행할 수 있어요." + chips([["이대로 진행 (담당자 확인)", "#code:"]]));
 }
@@ -339,14 +417,14 @@ function finish() {
 $("#form").addEventListener("submit", (e) => {
   e.preventDefault();
   const v = $("#text").value.trim();
-  if (!v) return;
+  if (!v || busy) return;
   say(v, "me");
   $("#text").value = "";
   setTimeout(() => handle(v), 150);
 });
 $("#log").addEventListener("click", (e) => {
   const b = e.target.closest("[data-v]");
-  if (!b || S.step === "done") return;
+  if (!b || S.step === "done" || busy) return;
   const v = b.dataset.v;
   if (v.startsWith("#sym:")) { b.classList.toggle("on"); return handle(v); }
   say(b.textContent, "me");

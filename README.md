@@ -50,6 +50,7 @@ python3 -m http.server 3000
 - 사이트 공식 정보(연락처·가격·결제·배송): `api/chat.js`의 `SITE_FACTS` — 지식베이스와 다르면 이쪽이 우선
 - 키가 없거나 할당량을 넘으면 기존 안내 문구로 답합니다.
 - 차대번호, 전화번호, 이메일은 Gemini로 보내기 전에 가립니다.
+- 가공 상담 페이지(`consult.js`)도 같은 `/api/chat`을 씁니다(`mode: "consult"`). 단계 진행·차량 확인·가공비 계산은 등록 데이터로 하고, 중간에 나온 질문만 Gemini가 답합니다. 이때 진행 상황 요약(차대번호·연락처 제외)을 함께 보내고, 가공 상담용 지시는 `api/chat.js`의 `CONSULT_PROMPT`에 있습니다.
 
 로컬에서 AI까지 시험하려면 (PowerShell):
 
@@ -64,6 +65,5 @@ $env:GEMINI_API_KEY = Read-Host "Gemini 키"; npm start
 - `auth.js` → `POST /api/auth/signup`, `/api/auth/login` + 서버 세션
 - `checkout.js`, `core.js` → `POST /api/orders` + PG 결제
 - `app.js` → `POST /api/inquiries`
-- `consult.js` → 가공 상담 페이지는 아직 규칙 기반 답변만 사용
 - `admin.js` → `GET/PATCH /api/requests` + 관리자 로그인
 - `data/demo-accounts.js` → 시연용 계정. 운영 전에 삭제

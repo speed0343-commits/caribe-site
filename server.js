@@ -35,10 +35,12 @@ function send(res, status, body, type) {
 }
 
 // Vercel의 /api 함수를 로컬에서도 그대로 실행 (예: GEMINI_API_KEY=... npm start)
-const chatApi = require("./api/chat.js");
+// api 폴더의 파일 이름이 곧 주소: /api/chat → api/chat.js, /api/submit → api/submit.js
+const API = Object.fromEntries(fs.readdirSync(path.join(ROOT, "api")).filter((f) => f.endsWith(".js") && !f.startsWith("_")).map((f) => [f.slice(0, -3), require("./api/" + f)]));
 
 const server = http.createServer((req, res) => {
-  if (req.url.split("?")[0] === "/api/chat") return chatApi(req, res);
+  const apiName = (req.url.split("?")[0].match(/^\/api\/([a-z-]+)$/) || [])[1];
+  if (apiName && API[apiName]) return API[apiName](req, res);
   if (req.method !== "GET" && req.method !== "HEAD") return send(res, 405, "Method Not Allowed");
 
   let pathname;
@@ -51,7 +53,7 @@ const server = http.createServer((req, res) => {
 
   const file = path.normalize(path.join(ROOT, pathname));
   const rel = path.relative(ROOT, file);
-  if (rel.startsWith("..") || path.isAbsolute(rel) || rel.split(path.sep).some((p) => p.startsWith(".")) || ["api", "docs"].includes(rel.split(path.sep)[0]) || BLOCKED.has(rel)) {
+  if (rel.startsWith("..") || path.isAbsolute(rel) || rel.split(path.sep).some((p) => p.startsWith(".")) || ["api", "docs", "lib"].includes(rel.split(path.sep)[0]) || BLOCKED.has(rel)) {
     return send(res, 404, "Not Found");
   }
 

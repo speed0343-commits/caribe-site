@@ -117,6 +117,8 @@
       createdAt: now, lastLoginAt: now, salt, hash,
     };
     const list = members(); list.push(m); saveMembers(list);
+    // 관리자 '회원' 목록용으로 서버에 보냄 (비밀번호 변환값은 보내지 않음)
+    if (window.Remote) { const { salt: _s, hash: _h, ...pub } = m; Remote.send("member", pub); }
     writeSession(m.id, false);
     return { ok: true, member: publicView(m) };
   }

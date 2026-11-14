@@ -185,11 +185,13 @@ fillMemberContact();
 $("#inquiryForm").onsubmit = (e) => {
   e.preventDefault();
   const f = e.target;
-  // 실제 운영: 서버 API(POST /api/inquiries)로 전송 → 관리자 화면에서 확인
+  // 이 브라우저에 저장하고 서버로 보냄 → 관리자 화면 '일반 문의' + 담당자 알림
   const list = store.get("inquiries", []);
   const me = window.CaribAuth && CaribAuth.current();
-  list.push({ name: f.name.value, phone: f.phone.value, vin: f.vin.value, message: f.message.value, at: new Date().toISOString(), memberId: me ? me.id : "" });
+  const inq = { id: "IQ-" + Date.now().toString(36).toUpperCase(), name: f.name.value, phone: f.phone.value, vin: f.vin.value, message: f.message.value, at: new Date().toISOString(), memberId: me ? me.id : "" };
+  list.push(inq);
   store.set("inquiries", list);
+  if (window.Remote) Remote.send("inquiry", inq);
   f.reset();
   fillMemberContact();
   $("#inquiryDone").hidden = false;
@@ -296,6 +298,7 @@ function startAgent(firstText) {
   const now = new Date().toISOString();
   const list = agentChats();
   let c = agentId && list.find((x) => x.id === agentId && x.status !== "종료");
+  const isNew = !c;
   if (!c) {
     c = { id: "CH-" + Date.now().toString(36).toUpperCase(), createdAt: now, status: "대기", topic: "", vin: sessionStorage.getItem("lastVin") || "", contact: { name: "", phone: "" }, messages: [] };
     list.unshift(c); agentId = c.id; sessionStorage.setItem("agentChatId", agentId);
@@ -304,12 +307,16 @@ function startAgent(firstText) {
   c.messages.push({ who: "system", text: `AI 상담에서 상담사 채팅으로 전환${car ? ` · 대화 중 차량: ${car}` : ""}${c.vin ? ` · 차대번호 ${c.vin}` : ""}`, at: now });
   if (!firstText.startsWith("#")) { c.messages.push({ who: "customer", text: firstText, at: now }); if (!c.topic) c.topic = firstText; }
   c.updatedAt = now; saveAgentChats(list);
+  // 서버로: 새 채팅이면 시작(담당자 알림), 이어지는 채팅이면 이번 메시지만 추가
+  if (window.Remote) { if (isNew) Remote.chatStart(c); else c.messages.filter((m) => m.at === now).forEach((m) => Remote.chatPost(c.id, m)); }
   agentSeen = c.messages.filter((m) => m.who === "agent").length;
   chatMode = "agent"; setAgentHeader(true);
   say(`디스크 외 부품은 <b>상담사가 직접</b> 안내해 드려요. 상담사 채팅으로 연결했습니다.\n${inHours() ? "영업시간이라 곧 답변드릴게요." : "지금은 영업시간(월~토 오전 9시~오후 6시) 외라 순차적으로 답변드립니다."}\n필요한 부품과 차대번호(또는 차종)를 함께 남겨 주시면 더 빨리 확인할 수 있어요.` + CONTACT_FORM + chips([["AI 상담으로 돌아가기", "#ai"]]));
 }
 function postToAgent(text) {
-  const c = updateAgentChat(agentId, (c) => { c.messages.push({ who: "customer", text, at: new Date().toISOString() }); if (!c.topic) c.topic = text; });
+  const msg = { who: "customer", text, at: new Date().toISOString() };
+  const c = updateAgentChat(agentId, (c) => { c.messages.push(msg); if (!c.topic) c.topic = text; });
+  if (c && window.Remote) Remote.chatPost(agentId, msg).then(mergeServerChat);
   if (!c) { chatMode = "ai"; setAgentHeader(false); say("상담이 종료되었어요. 새로 상담이 필요하시면 다시 말씀해 주십시오." + chips([["상담사와 다시 채팅", "#agent"]])); }
 }
 function pollAgent() {
@@ -325,6 +332,24 @@ function pollAgent() {
   }
 }
 setInterval(pollAgent, 1500);
+// 서버의 상담사 답변·상태를 이 브라우저 기록에 합침 (3초마다, 창이 보일 때만)
+function mergeServerChat(d) {
+  if (!d || !Array.isArray(d.messages) || !agentId) return;
+  const key = (m) => `${m.who}|${m.at}|${m.text}`;
+  updateAgentChat(agentId, (c) => {
+    const have = new Set(c.messages.map(key));
+    d.messages.forEach((m) => { if (!have.has(key(m))) c.messages.push(m); });
+    c.messages.sort((a, b) => String(a.at).localeCompare(String(b.at)));
+    if (d.status) c.status = d.status;
+  });
+  pollAgent();
+}
+let pullingAgent = false;
+setInterval(async () => {
+  if (!agentId || pullingAgent || !window.Remote || document.hidden) return;
+  pullingAgent = true;
+  try { mergeServerChat(await Remote.chatPull(agentId)); } finally { pullingAgent = false; }
+}, 3000);
 window.addEventListener("storage", (e) => { if (e.key === AGENT_KEY) pollAgent(); });
 
 // ---------------- 자주 묻는 질문 (2026-11-13 시뮬레이션 결과로 보강) ----------------
@@ -628,7 +653,9 @@ chatLog.addEventListener("submit", (e) => {
   e.preventDefault();
   const name = f.name.value.trim(), phone = f.phone.value.trim(), items = (f.items ? f.items.value.trim() : "");
   if (!phone) return f.phone.focus();
-  updateAgentChat(agentId, (c) => { c.contact = { name, phone, items }; c.messages.push({ who: "system", text: `고객 연락처 등록: ${name} ${phone}${items ? "\n필요 품목: " + items : ""}`, at: new Date().toISOString() }); });
+  const sysMsg = { who: "system", text: `고객 연락처 등록: ${name} ${phone}${items ? "\n필요 품목: " + items : ""}`, at: new Date().toISOString() };
+  updateAgentChat(agentId, (c) => { c.contact = { name, phone, items }; c.messages.push(sysMsg); });
+  if (window.Remote) Remote.chatPost(agentId, sysMsg, { name, phone, items });
   f.outerHTML = `<p class="small muted" style="margin:8px 0 0">연락처${items ? "와 필요 품목을" : "를"} 남겼어요 (${esc(phone)}). 채팅 응답이 늦으면 전화로 안내드릴게요.</p>`;
 });
 chatLog.addEventListener("click", (e) => {

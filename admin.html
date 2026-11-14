@@ -19,11 +19,23 @@
       <nav>
         <a href="index.html">사이트로</a>
         <a href="consult.html" class="keep">가공 상담</a>
+        <a href="#" id="logoutBtn" class="keep" hidden>로그아웃</a>
       </nav>
     </div>
   </header>
 
   <main class="wrap" style="padding-top:28px">
+    <section class="panel admin-login" id="loginBox" hidden>
+      <h2>관리자 로그인</h2>
+      <form id="loginForm" autocomplete="on">
+        <label>비밀번호 <input id="loginPw" type="password" autocomplete="current-password" required /></label>
+        <button class="btn btn-primary" type="submit">로그인</button>
+      </form>
+      <p class="admin-login-msg" id="loginMsg" role="alert"></p>
+    </section>
+
+    <div id="adminApp" hidden>
+    <p class="sys-status" id="sysStatus"></p>
     <div class="stat-row" id="stats"></div>
 
     <section class="panel">
@@ -43,12 +55,14 @@
     </section>
 
     <div id="detail"></div>
+    </div>
   </main>
 
   <script src="site-nav.js"></script>
   <script src="catalog-data.js"></script>
   <script src="data.js"></script>
   <script src="core.js"></script>
-  <script src="admin.js"></script>
+  <!-- 로그인·서버 연결 후 admin.js 를 불러옵니다 -->
+  <script src="admin-remote.js"></script>
 </body>
 </html>

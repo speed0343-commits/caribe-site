@@ -6,9 +6,10 @@ const $ = (s) => document.querySelector(s);
 const won = (n) => n.toLocaleString("ko-KR") + "원";
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const norm = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+// 관리자 화면에서는 admin-remote.js 가 window.RemoteStore 를 두어, 주문·의뢰·문의·채팅 등을 서버에서 읽고 씁니다.
 const store = {
-  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  get(k, d) { const R = window.RemoteStore; if (R && R.has(k)) return R.get(k, d); try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { const R = window.RemoteStore; if (R && R.has(k)) return R.set(k, v); try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 const makeKo = (m) => MAKE_KO[m] || m;
 const axleKo = (a) => (a === "front" ? "앞" : "뒤");

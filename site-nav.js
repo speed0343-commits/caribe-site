@@ -48,7 +48,21 @@
     btn.innerHTML = '<i aria-hidden="true"></i><span>메뉴</span>';
     nav.appendChild(btn);
     bar.appendChild(panel);
+    // 로그인 · 내 정보 · 로그아웃 (좁은 화면에서는 상단 띠 대신 메뉴 안에 보임)
+    // auth.js 가 로그인 상태에 따라 .nav-auth 를 다시 그리므로 메뉴를 열 때마다 새로 복사
+    const acct = document.createElement("div");
+    acct.className = "nav-panel-acct";
+    panel.appendChild(acct);
+    const syncAcct = () => {
+      acct.innerHTML = "";
+      nav.querySelectorAll("a.nav-auth").forEach((a) => {
+        const c = a.cloneNode(true);
+        c.className = a.classList.contains("active") ? "active" : "";
+        acct.appendChild(c);
+      });
+    };
     const set = (open) => {
+      if (open) syncAcct();
       bar.classList.toggle("menu-open", open);
       btn.setAttribute("aria-expanded", open ? "true" : "false");
       btn.querySelector("span").textContent = open ? "닫기" : "메뉴";
@@ -119,7 +133,19 @@
     a.textContent = "AI 상담";
     document.body.appendChild(a);
   }
-  const init = () => { setupMenu(); setupScroll(); updateCartCount(); setupContactLinks(); setupChatFab(); };
+  // ---------- 좁은 화면에서 입력칸 안내 문구 줄이기 (data-ph-short) ----------
+  function setupShortPlaceholders() {
+    const els = document.querySelectorAll("[data-ph-short]");
+    if (!els.length || !window.matchMedia) return;
+    const mq = window.matchMedia("(max-width: 480px)");
+    const apply = () => els.forEach((el) => {
+      if (!el.dataset.phLong) el.dataset.phLong = el.getAttribute("placeholder") || "";
+      el.setAttribute("placeholder", mq.matches ? el.dataset.phShort : el.dataset.phLong);
+    });
+    apply();
+    if (mq.addEventListener) mq.addEventListener("change", apply);
+  }
+  const init = () => { setupMenu(); setupScroll(); updateCartCount(); setupContactLinks(); setupChatFab(); setupShortPlaceholders(); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();

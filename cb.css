@@ -287,3 +287,117 @@
 .msg.ai-wait { color: #6b7280; font-style: italic; }
 @media (prefers-reduced-motion: no-preference) { .msg.ai-wait { animation: aiPulse 1.2s ease-in-out infinite; } }
 @keyframes aiPulse { 50% { opacity: .45; } }
+
+/* =====================================================================
+   휴대폰 화면 정리 (2026-11-14)
+   ===================================================================== */
+/* 메뉴 패널: 상단 띠(.topbar)가 pointer-events:none 이라 패널 링크가 눌리지 않던 문제 */
+.cb .nav-panel { pointer-events: auto; }
+@media (max-width: 860px) {
+  /* 1fr 은 내용보다 좁아지지 않아 첫 화면 글·검색창이 오른쪽에서 잘림 → 0까지 줄어들게 */
+  .cb .hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .cb .hero-copy { min-width: 0; }
+}
+
+/* 메뉴 패널 아래쪽: 로그인 · 내 정보 · 로그아웃 */
+.nav-panel-acct:empty { display: none; }
+@media (max-width: 720px) {
+  .cb .nav-panel { left: 16px; right: 16px; padding: 6px 18px 10px; max-height: calc(100dvh - 110px); overscroll-behavior: contain; }
+  .cb .nav-panel a { min-height: 52px; font-size: 16px; color: #1f2422; border-bottom-color: #e3e9e6; }
+  .cb .nav-panel a::after { color: #8a9590; }
+  .cb .nav-panel-acct { display: none; gap: 8px; padding: 12px 0 4px; border-top: 1px solid #d3ddd8; }
+  .cb .nav-panel-acct a { flex: 1 1 0; justify-content: center; min-height: 46px; border: 1.5px solid #1f2422; border-radius: 999px; font-size: 15px; font-weight: 800; }
+  .cb .nav-panel-acct a::after, .cb .nav-panel-acct a::before { display: none; }
+  .cb .nav-panel-acct a .short { display: none; }
+  .cb .nav-panel-acct a .full { display: inline; }
+}
+/* 작은 휴대폰: 상단 띠에는 로고 · 장바구니 · 메뉴만, 로그인은 메뉴 안으로 */
+@media (max-width: 480px) {
+  .cb .topbar nav a.nav-auth { display: none; }
+  .cb .nav-panel-acct { display: flex; }
+}
+@media (max-width: 380px) {
+  .cb .topbar-inner { padding-left: 14px; }
+  .cb .topbar .logo img { height: 21px; }
+  .cb .cart-btn, .cb nav a.cart-btn { padding: 10px 12px; }
+  .cb .nav-toggle { padding: 6px 10px; }
+}
+
+@media (max-width: 720px) {
+  /* ---------- 첫 화면 ---------- */
+  .cb .hero h1 { font-size: clamp(30px, 8.6vw, 40px); }
+  .cb .hero .lead, .cb .hero-plain .lead, .cb .auth-band-sub { font-size: 16px; margin-top: 16px; }
+  .cb .hero .search-box { margin-top: 22px; padding: 5px 5px 5px 18px; }
+  .cb .hero .search-box input { height: 48px; }
+  .cb .hero .search-box button[type="submit"] { height: 48px; min-height: 48px; padding: 0 20px; font-size: 16px; }
+  .cb .search-tags { margin-top: 16px; gap: 6px; }
+  .cb .search-tags button { padding: 7px 12px; font-size: 13px; }
+  /* 디스크 사진: 아래가 잘린 채 보이던 것을 작게 통째로 */
+  .cb .hero.hero-home { padding-bottom: 112px; }
+  .cb .hero.hero-home .hero-disc { height: 230px; max-height: none; overflow: visible; margin-top: 12px; }
+  .cb .hero.hero-home .hero-disc img { width: 230px; left: 50%; top: 0; transform: translateX(-50%); }
+
+  /* ---------- 찾는 방법: 큰 카드 3장 → 목록형 카드 1장 ---------- */
+  .cb-ways { margin-top: -84px; }
+  .cb-ways-grid { gap: 0; background: #fff; border-radius: 22px; box-shadow: 0 14px 36px rgba(11, 80, 60, .14); overflow: hidden; }
+  .cb-ways a { gap: 14px; padding: 14px 18px; border-radius: 0; box-shadow: none; }
+  .cb-ways a + a { border-top: 1px solid #e3e9e6; }
+  .cb-ways a:hover { box-shadow: none; background: #f6faf8; }
+  .cb-ways a::after { content: "›"; margin-left: auto; padding-left: 8px; font-size: 22px; line-height: 1; color: #8a9590; }
+  .cb-ico { width: 42px; height: 42px; border-radius: 14px; }
+  .cb-ico svg { width: 22px; height: 22px; }
+  .cb-ways b { font-size: 16px; }
+  .cb-ways small { font-size: 13px; }
+
+  /* ---------- 상품표 → 카드 (가격 · 담기 버튼이 오른쪽으로 숨던 문제) ---------- */
+  .cb .pt-wrap { overflow-x: visible; }
+  .cb .pt:not(.pt-price) { min-width: 0; display: block; font-size: 14px; }
+  .cb .pt:not(.pt-price) thead { display: none; }
+  .cb .pt:not(.pt-price) tbody { display: block; border-top: 2px solid #111413; }
+  .cb .pt:not(.pt-price) tr { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 16px 2px; border-bottom: 1px solid #c9cfcc; }
+  .cb .pt:not(.pt-price) td { display: block; padding: 0; border: 0; text-align: left; }
+  .cb .pt:not(.pt-price) td:nth-child(1) { grid-area: 1 / 1; }
+  .cb .pt:not(.pt-price) td:nth-child(1) b { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #e3f1ea; color: #0b5a41; font-size: 13px; }
+  .cb .pt:not(.pt-price) td:nth-child(2) { grid-area: 1 / 2 / 2 / 4; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+  .cb .pt:not(.pt-price) td:nth-child(4) { grid-area: 2 / 1 / 3 / 4; margin-top: 4px; font-size: 14px; color: #2d3431; }
+  .cb .pt:not(.pt-price) td:nth-child(3) { grid-area: 3 / 1 / 4 / 4; font-size: 13px; color: #5d6662; }
+  .cb .pt:not(.pt-price) td:nth-child(3)::after { content: " mm"; font-family: "Gothic A1", sans-serif; }
+  .cb .pt:not(.pt-price) td:nth-child(5) { grid-area: 4 / 1 / 5 / 3; margin-top: 8px; }
+  .cb .pt:not(.pt-price) td:nth-child(6) { grid-area: 5 / 1 / 6 / 3; }
+  .cb .pt:not(.pt-price) td:nth-child(5)::before, .cb .pt:not(.pt-price) td:nth-child(6)::before { display: inline-block; min-width: 68px; font-family: "Gothic A1", sans-serif; font-size: 12px; font-weight: 700; color: #5d6662; }
+  .cb .pt:not(.pt-price) td:nth-child(5)::before { content: "COLUMN"; }
+  .cb .pt:not(.pt-price) td:nth-child(6)::before { content: "BREMBO"; }
+  .cb .pt:not(.pt-price) td:nth-child(5) b { font-size: 16px; }
+  .cb .pt:not(.pt-price) td:nth-child(7) { grid-area: 4 / 3 / 6 / 4; align-self: end; }
+  .cb .pt:not(.pt-price) button { min-height: 44px; padding: 0 18px; border-radius: 999px; }
+
+  /* 가공비 표 → 타입별 카드 (외경 구간 4칸) */
+  .cb .pt.pt-price { min-width: 0; display: block; }
+  .cb .pt.pt-price caption { display: block; }
+  .cb .pt.pt-price thead { display: none; }
+  .cb .pt.pt-price tbody { display: block; border-top: 2px solid #111413; }
+  .cb .pt.pt-price tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 14px 2px; border-bottom: 1px solid #c9cfcc; }
+  .cb .pt.pt-price td { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0; border: 0; }
+  .cb .pt.pt-price td:first-child { grid-column: 1 / -1; font-size: 16px; }
+  .cb .pt.pt-price td:not(:first-child)::before { font-family: "Gothic A1", sans-serif; font-size: 12px; font-weight: 700; color: #5d6662; }
+  .cb .pt.pt-price td:nth-child(2)::before { content: "300 이하"; }
+  .cb .pt.pt-price td:nth-child(3)::before { content: "301~330"; }
+  .cb .pt.pt-price td:nth-child(4)::before { content: "331~350"; }
+  .cb .pt.pt-price td:nth-child(5)::before { content: "351 이상"; }
+
+  /* ---------- 회사 소개 표: 항목 칸을 좁혀 내용이 덜 접히게 ---------- */
+  .cb .info-table th { width: 96px; padding: 12px 10px; white-space: normal; font-size: 14px; }
+  .cb .info-table td { padding: 12px 10px; font-size: 14px; }
+
+  /* ---------- 하단 사업자 정보: 줄 끝에 남던 | 구분선 없애고 한 줄씩 ---------- */
+  .cb .footer-legal i { display: none; }
+  .cb .footer-legal p span { display: block; }
+  .cb .footer-legal p br { display: none; }
+
+  /* ---------- AI 상담 버튼: 조금 작게, 아이폰 하단 홈바 피해서 ---------- */
+  .cb .chat-fab, .cb a.chat-fab { padding: 12px 18px; font-size: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* 동의 체크박스가 입력칸처럼 100% 폭으로 늘어나 글과 떨어져 보이던 문제 */
+.cb .inquiry-form .check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; }
+.cb .inquiry-form .check input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; flex: none; margin: 1px 0 0; padding: 0; accent-color: #0b6e4f; }

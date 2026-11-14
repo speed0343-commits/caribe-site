@@ -456,3 +456,17 @@
 .sys-status { margin: 0 0 14px; font-size: 13px; color: #4b5651; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .sys-status.warn span:first-child { color: #c8102e; font-weight: 700; }
 .contact-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 첫 화면 띠(hero) 없이 바로 본문이 오는 페이지(관리자 등): 떠 있는 메뉴바 높이만큼 내려서 시작 */
+.cb .topbar + main { padding-top: 128px; }
+@media (max-width: 720px) { .cb .topbar + main { padding-top: 100px; } }
+/* 관리자: 메뉴가 3개뿐이라 '메뉴' 버튼이 없음 → 휴대폰에서도 링크를 그대로 보이게 (로그아웃 포함) */
+@media (max-width: 720px) {
+  .cb .admin-nav { gap: 2px; }
+  .cb .admin-nav a, .cb .admin-nav a.keep { display: inline-block; padding: 8px 8px; font-size: 13px; font-weight: 700; opacity: 1; }
+  .cb .admin-nav a[hidden] { display: none; }
+  .cb .topbar .logo .logo-tag { font-size: 10px; padding: 1px 4px; }
+}
+/* 관리자 로그인 입력칸·버튼이 카드 밖으로 넘치던 문제 */
+.cb .admin-login input, .cb .admin-login button { width: 100%; max-width: 100%; box-sizing: border-box; }
+@media (max-width: 440px) { .cb .topbar:has(.admin-nav) .logo-tag { display: none; } .cb .admin-nav a, .cb .admin-nav a.keep { padding: 8px 6px; } }

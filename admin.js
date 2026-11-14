@@ -26,8 +26,9 @@ function renderStats() {
   const open = r.filter((x) => ["접수", "검토 중"].includes(x.status)).length;
   const waitingChats = ch.filter((c) => c.status !== "종료" && unreadOf(c) > 0).length;
   const newOrders = od.filter((o) => ["주문 접수", "적용 확인", "취소 요청"].includes(o.status)).length;
+  const openInq = q.filter((x) => ["접수", "검토 중", "견적 안내"].includes(x.status)).length; // 작업 완료·취소는 빼고 셈
   $("#stats").innerHTML = [
-    [newOrders, "처리 대기 주문 (접수·적용 확인·취소 요청)"], [open, "가공 의뢰 처리 대기"], [waitingChats, "답변 대기 상담사 채팅"], [q.length, "일반 문의"],
+    [newOrders, "처리 대기 주문 (접수·적용 확인·취소 요청)"], [open, "가공 의뢰 처리 대기"], [waitingChats, "답변 대기 상담사 채팅"], [openInq, "일반 문의 처리 대기"],
   ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join("");
   const unreadTotal = ch.reduce((s, c) => s + unreadOf(c), 0);
   const b = $("#chatBadge"); b.hidden = !unreadTotal; b.textContent = unreadTotal;

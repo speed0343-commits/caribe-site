@@ -456,3 +456,4 @@
 .sys-status { margin: 0 0 14px; font-size: 13px; color: #4b5651; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .sys-status.warn span:first-child { color: #c8102e; font-weight: 700; }
 .contact-toast.show { opacity: 1; transform: translate(-50%, 0); }
+#adminToast.err { background: #c8102e; }

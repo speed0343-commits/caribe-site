@@ -34,7 +34,11 @@ function send(res, status, body, type) {
   res.end(body);
 }
 
+// Vercel의 /api 함수를 로컬에서도 그대로 실행 (예: GEMINI_API_KEY=... npm start)
+const chatApi = require("./api/chat.js");
+
 const server = http.createServer((req, res) => {
+  if (req.url.split("?")[0] === "/api/chat") return chatApi(req, res);
   if (req.method !== "GET" && req.method !== "HEAD") return send(res, 405, "Method Not Allowed");
 
   let pathname;
@@ -47,7 +51,7 @@ const server = http.createServer((req, res) => {
 
   const file = path.normalize(path.join(ROOT, pathname));
   const rel = path.relative(ROOT, file);
-  if (rel.startsWith("..") || path.isAbsolute(rel) || rel.split(path.sep).some((p) => p.startsWith(".")) || BLOCKED.has(rel)) {
+  if (rel.startsWith("..") || path.isAbsolute(rel) || rel.split(path.sep).some((p) => p.startsWith(".")) || rel.split(path.sep)[0] === "api" || BLOCKED.has(rel)) {
     return send(res, 404, "Not Found");
   }
 

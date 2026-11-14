@@ -40,6 +40,22 @@ python3 -m http.server 3000
 | `catalog-data.js`, `data.js`, `data/` | 상품·차종 데이터 |
 | `assets/`, `images/` | 이미지 |
 
+## AI 상담 (Google Gemini)
+
+상담창은 차종·품번·차대번호 검색과 자주 묻는 질문을 먼저 브라우저에서 처리하고, 거기서 답하지 못한 질문만 `api/chat.js`(서버 함수)를 거쳐 Gemini에 보냅니다.
+
+- API 키: Vercel 프로젝트의 환경 변수 `GEMINI_API_KEY` (코드나 저장소에 넣지 않음)
+- 모델 변경: 환경 변수 `GEMINI_MODEL` (기본값 `gemini-flash-lite-latest`)
+- 상담원 지침(회사 정보·정책): `api/chat.js`의 `SYSTEM_PROMPT`
+- 키가 없거나 할당량을 넘으면 기존 안내 문구로 답합니다.
+- 전화번호와 이메일은 Gemini로 보내기 전에 가립니다.
+
+로컬에서 AI까지 시험하려면 (PowerShell):
+
+```bash
+$env:GEMINI_API_KEY = Read-Host "Gemini 키"; npm start
+```
+
 ## 현재 상태 (시연용)
 
 회원, 장바구니, 주문, 문의, 상담 기록은 모두 브라우저 localStorage에 저장됩니다. 실제 운영 전에 바꿔야 할 부분은 코드에 `실제 운영:` 주석으로 표시되어 있습니다.
@@ -47,6 +63,6 @@ python3 -m http.server 3000
 - `auth.js` → `POST /api/auth/signup`, `/api/auth/login` + 서버 세션
 - `checkout.js`, `core.js` → `POST /api/orders` + PG 결제
 - `app.js` → `POST /api/inquiries`
-- `consult.js` → `/api/consult` (AI 상담)
+- `consult.js` → 가공 상담 페이지는 아직 규칙 기반 답변만 사용
 - `admin.js` → `GET/PATCH /api/requests` + 관리자 로그인
 - `data/demo-accounts.js` → 시연용 계정. 운영 전에 삭제

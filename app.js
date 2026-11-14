@@ -515,6 +515,42 @@ function botReply(text) {
 
   const ca = customAnswer(t);
   if (ca) return say(ca);
+  if (!text.startsWith("#")) return askGemini(text, t);
+  return fallbackReply(text, t);
+}
+
+// ---------------- AI 답변 (Google Gemini, 서버 /api/chat 경유) ----------------
+// 위의 검색·자주 묻는 질문으로 답하지 못한 질문만 보냅니다. 실패하면 기존 안내로 돌아갑니다.
+const aiHistory = [];
+const aiFormat = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^\s*[*-]\s+/gm, "· ");
+async function askGemini(text, t) {
+  const wait = document.createElement("div");
+  wait.className = "msg bot ai-wait";
+  wait.textContent = "답변을 준비하고 있어요…";
+  chatLog.appendChild(wait);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  const car = [chatState.make && makeKo(chatState.make), chatState.group, chatState.code].filter(Boolean).join(" ");
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: aiHistory.slice(-6), car }),
+    });
+    const data = await r.json().catch(() => ({}));
+    wait.remove();
+    if (!r.ok || !data.reply) {
+      if (r.status === 429) return say("지금 AI 상담 요청이 많아 잠시 답변하기 어려워요. 잠시 후 다시 물어보시거나 상담사와 채팅해 주십시오." + chips([["상담사와 채팅", "#agent"]]));
+      return fallbackReply(text, t);
+    }
+    aiHistory.push({ role: "user", text }, { role: "model", text: data.reply });
+    say(aiFormat(data.reply) + `<span class="ai-note">AI 답변이에요. 주문·적용 여부는 담당자가 최종 확인합니다.</span>` + chips([["상담사와 채팅", "#agent"]]));
+  } catch (e) {
+    wait.remove();
+    fallbackReply(text, t);
+  }
+}
+
+function fallbackReply(text, t) {
   logUnanswered(text, t);
   return say("질문을 정확히 이해하지 못했어요. 이렇게 물어봐 주시면 바로 찾아 드려요.\n· 차대번호 17자리 (예: WDD2130421A123456)\n· 디스크 OEM 품번 (예: 34116860907)\n· 차종과 위치 (예: 벤츠 W213 앞 디스크)\n디스크 외 부품이나 다른 문의는 상담사가 도와드려요." + chips([["벤츠 W213 앞 디스크", "벤츠 W213 앞 디스크"], ["배송·결제 안내", "결제는 어떻게 하나요?"], ["카오스 가공 관련", "#rqlist"], ["상담사와 채팅", "#agent"]]));
 }

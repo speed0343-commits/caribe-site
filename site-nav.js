@@ -34,6 +34,9 @@
     const panel = document.createElement("div");
     panel.className = "nav-panel";
     panel.id = "navPanel";
+    // 상단 띠(.topbar)는 pointer-events:none 이라 그대로 두면 패널 링크가 눌리지 않음.
+    // CSS(cb.css)가 예전 것으로 캐시돼 있어도 눌리도록 여기서도 직접 지정
+    panel.style.pointerEvents = "auto";
     nav.querySelectorAll("a").forEach((a) => {
       if (a.classList.contains("nav-auth") || a.classList.contains("cart-btn")) return;
       const c = a.cloneNode(true);

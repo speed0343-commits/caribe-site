@@ -42,15 +42,15 @@
     ["배송비", "무료배송"],
   ].filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
   $("#coTotal").textContent = won(total) + (chaosQuote ? " +α" : "");
-  $("#coSumNote").textContent = `${PRICE_NOTE ? PRICE_NOTE + " · " : ""}배송비는 무료이며, 가공비는 담당자 확인 후 최종 금액으로 안내합니다.`;
+  $("#coSumNote").textContent = `${PRICE_NOTE ? PRICE_NOTE + " · " : ""}배송비는 무료이며, 가공비는 담당자 확인 후 최종 금액을 안내해 드립니다.`;
 
   // ---------- 주문자 · 회원 정보 ----------
   if (me) {
     form.oName.value = me.company ? `${me.name} / ${me.company}` : me.name;
     form.oPhone.value = me.phone; form.oEmail.value = me.email;
-    $("#coLogin").textContent = `${me.name}님 회원 정보로 입력했습니다`;
+    $("#coLogin").textContent = `${me.name}님의 회원 정보로 입력되었습니다`;
   } else {
-    $("#coLogin").innerHTML = `<a href="login.html?next=checkout.html">로그인</a>하면 정보가 자동 입력됩니다 · 비회원 주문 가능`;
+    $("#coLogin").innerHTML = `<a href="login.html?next=checkout.html">로그인</a>하시면 정보가 자동으로 입력됩니다 · 비회원 주문 가능`;
   }
   try { const v = sessionStorage.getItem("lastVin"); if (v) form.vin.value = v; } catch (e) {}
 
@@ -101,7 +101,7 @@
     s.onload = () => (window.daum && window.daum.Postcode ? openPostcode() : fail());
     s.onerror = fail;
     document.head.appendChild(s);
-    function fail() { help.textContent = "주소 검색을 불러오지 못했습니다. 우편번호와 주소를 직접 입력해 주십시오."; help.hidden = false; form.zip.focus(); }
+    function fail() { help.textContent = "주소 검색을 불러오지 못했습니다. 우편번호와 주소를 직접 입력해 주세요."; help.hidden = false; form.zip.focus(); }
   });
 
   // ---------- 결제 방법 ----------
@@ -148,29 +148,29 @@
     syncReceiver();
     const v = (n) => String(form[n].value || "").trim();
     const errs = {};
-    if (v("oName").length < 2) errs.oName = "이름을 2자 이상 입력해 주십시오.";
-    if (!isMobile(v("oPhone"))) errs.oPhone = "휴대폰 번호를 확인해 주십시오. (예: 010-1234-5678)";
-    if (v("oEmail") && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v("oEmail"))) errs.oEmail = "이메일 형식을 확인해 주십시오.";
-    if (v("rName").length < 2) errs.rName = "받는 분 이름을 입력해 주십시오.";
-    if (!isMobile(v("rPhone"))) errs.rPhone = "받는 분 휴대폰 번호를 확인해 주십시오.";
-    if (!/^\d{5}$/.test(v("zip"))) errs.zip = "우편번호 5자리를 입력해 주십시오.";
-    if (v("addr1").length < 5) errs.addr1 = "주소를 입력해 주십시오.";
-    if (!v("addr2")) errs.addr2 = "상세 주소를 입력해 주십시오.";
+    if (v("oName").length < 2) errs.oName = "이름을 2자 이상 입력해 주세요.";
+    if (!isMobile(v("oPhone"))) errs.oPhone = "휴대폰 번호를 확인해 주세요. (예: 010-1234-5678)";
+    if (v("oEmail") && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v("oEmail"))) errs.oEmail = "이메일 형식을 확인해 주세요.";
+    if (v("rName").length < 2) errs.rName = "받는 분 이름을 입력해 주세요.";
+    if (!isMobile(v("rPhone"))) errs.rPhone = "받는 분 휴대폰 번호를 확인해 주세요.";
+    if (!/^\d{5}$/.test(v("zip"))) errs.zip = "우편번호 5자리를 입력해 주세요.";
+    if (v("addr1").length < 5) errs.addr1 = "주소를 입력해 주세요.";
+    if (!v("addr2")) errs.addr2 = "상세 주소를 입력해 주세요.";
     const vin = v("vin").toUpperCase().replace(/[\s-]/g, "");
-    if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) errs.vin = "차대번호 17자리를 확인해 주십시오. (I·O·Q는 쓰지 않습니다)";
+    if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) errs.vin = "차대번호 17자리를 확인해 주세요. (I·O·Q는 사용되지 않습니다)";
     const receipt = form.receipt.value;
-    if (receipt === "cash" && !isMobile(v("receiptNo"))) errs.receiptNo = "현금영수증 받을 휴대폰 번호를 확인해 주십시오.";
-    if (receipt === "tax" && digits(v("receiptNo")).length !== 10) errs.receiptNo = "사업자등록번호 10자리를 입력해 주십시오.";
-    if (receipt === "tax" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v("receiptEmail"))) errs.receiptEmail = "세금계산서 받을 이메일을 입력해 주십시오.";
-    if (!$("#agreeOrder").checked || !$("#agreePrivacy").checked) errs.agree = "필수 항목에 동의해 주십시오.";
+    if (receipt === "cash" && !isMobile(v("receiptNo"))) errs.receiptNo = "현금영수증을 받으실 휴대폰 번호를 확인해 주세요.";
+    if (receipt === "tax" && digits(v("receiptNo")).length !== 10) errs.receiptNo = "사업자등록번호 10자리를 입력해 주세요.";
+    if (receipt === "tax" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v("receiptEmail"))) errs.receiptEmail = "세금계산서를 받으실 이메일을 입력해 주세요.";
+    if (!$("#agreeOrder").checked || !$("#agreePrivacy").checked) errs.agree = "필수 항목에 동의해 주세요.";
     const pay = form.pay.value;
-    if (!PAY_METHODS[pay] || !PAY_METHODS[pay].ready) errs.agree = (errs.agree ? errs.agree + " " : "") + "사용 가능한 결제 방법을 골라 주십시오.";
-    if (Object.keys(errs).length) { showErrors(errs); $("#coError").textContent = "입력 내용을 확인해 주십시오."; $("#coError").hidden = false; return; }
+    if (!PAY_METHODS[pay] || !PAY_METHODS[pay].ready) errs.agree = (errs.agree ? errs.agree + " " : "") + "사용 가능한 결제 방법을 선택해 주세요.";
+    if (Object.keys(errs).length) { showErrors(errs); $("#coError").textContent = "입력 내용을 확인해 주세요."; $("#coError").hidden = false; return; }
     $("#coError").hidden = true;
 
     // 장바구니가 다른 창에서 바뀌었는지 다시 확인
     const now = cartItemsFromStore();
-    if (!now.length) { $("#coError").textContent = "장바구니가 비어 있습니다. 다시 담아 주십시오."; $("#coError").hidden = false; return; }
+    if (!now.length) { $("#coError").textContent = "장바구니가 비어 있습니다. 상품을 다시 담아 주세요."; $("#coError").hidden = false; return; }
 
     const memo = $("#memoSel").value === "custom" ? v("memoText") : $("#memoSel").value;
     const order = {
@@ -211,9 +211,9 @@
     box.innerHTML = `
       <div class="co-done-head"><span class="muted small">주문번호</span><b class="co-no">${esc(o.id)}</b><span class="status s0">${esc(o.status)}</span></div>
       <ol class="co-next">
-        <li><b>차량 적용 확인</b><span>담당자가 ${o.vin ? "차대번호" : "주문 상품"}로 적용 여부를 확인하고 연락드립니다.</span></li>
-        <li><b>결제 안내</b><span>${esc(o.payment.name)} — 확인이 끝나면 최종 금액과 입금 계좌를 문자로 안내합니다.</span></li>
-        <li><b>출고 · 배송</b><span>입금 확인 후 출고하고 택배 송장번호를 알려드립니다.${o.items.some((x) => x.chaos) ? " 가공 상품은 가공 후 출고됩니다." : ""}</span></li>
+        <li><b>차량 적용 확인</b><span>담당자가 ${o.vin ? "차대번호" : "주문 상품"}로 적용 여부를 확인한 뒤 연락드리겠습니다.</span></li>
+        <li><b>결제 안내</b><span>${esc(o.payment.name)} — 확인이 끝나면 최종 금액과 입금 계좌를 문자로 안내해 드립니다.</span></li>
+        <li><b>출고 · 배송</b><span>입금이 확인되면 출고 후 택배 송장번호를 알려 드립니다.${o.items.some((x) => x.chaos) ? " 가공 상품은 가공을 마친 뒤 출고됩니다." : ""}</span></li>
       </ol>
       <table class="info-table">
         <tr><th>주문 상품</th><td>${o.items.map((x) => `디스크 ${axleKo(x.axle)} ${esc(x.brand)} OEM ${esc(x.pn)} × ${x.sets}세트${x.chaos ? ` + ${esc(x.chaos.name)}` : ""}`).join("<br />")}</td></tr>
@@ -223,9 +223,9 @@
         <tr><th>배송지</th><td>(${esc(o.receiver.zip)}) ${esc(o.receiver.addr1)} ${esc(o.receiver.addr2)}${o.receiver.memo ? `<br /><span class="muted small">${esc(o.receiver.memo)}</span>` : ""}</td></tr>
         ${o.vin ? `<tr><th>차대번호</th><td>${esc(o.vin)}</td></tr>` : ""}
       </table>
-      <p class="co-note">궁금한 점은 010-5459-3111로 전화 주십시오.</p>
+      <p class="co-note">궁금하신 점은 010-5459-3111로 전화 주세요.</p>
       <div class="co-done-actions">
-        ${isMember ? '<a class="btn btn-primary" href="mypage.html">마이페이지에서 주문 보기</a>' : '<span class="co-note">비회원 주문은 주문번호와 연락처로 담당자에게 확인할 수 있습니다.</span>'}
+        ${isMember ? '<a class="btn btn-primary" href="mypage.html">마이페이지에서 주문 보기</a>' : '<span class="co-note">비회원 주문은 주문번호와 연락처를 알려 주시면 담당자가 확인해 드립니다.</span>'}
         <a class="btn btn-ghost" href="index.html">쇼핑 계속하기</a>
       </div>`;
     window.scrollTo(0, 0);

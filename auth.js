@@ -40,10 +40,10 @@
     return (10 - (sum % 10)) % 10 === +d[9];
   }
   function pwProblem(pw) {
-    if (!pw || pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-    if (pw.length > 64) return "비밀번호는 64자 이하로 입력해 주십시오.";
-    if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return "비밀번호에 영문과 숫자를 모두 넣어 주십시오.";
-    if (/\s/.test(pw)) return "비밀번호에 공백은 쓸 수 없습니다.";
+    if (!pw || pw.length < 8) return "비밀번호는 8자 이상 입력해 주세요.";
+    if (pw.length > 64) return "비밀번호는 64자 이하로 입력해 주세요.";
+    if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return "비밀번호에 영문과 숫자를 모두 포함해 주세요.";
+    if (/\s/.test(pw)) return "비밀번호에는 공백을 사용할 수 없습니다.";
     return "";
   }
 
@@ -51,7 +51,7 @@
   const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
   const unhex = (h) => new Uint8Array((h.match(/../g) || []).map((x) => parseInt(x, 16)));
   async function hashPw(pw, saltHex) {
-    if (!window.crypto || !crypto.subtle) throw new Error("이 브라우저에서는 보안 기능(crypto.subtle)을 쓸 수 없습니다. http://localhost 또는 https 주소로 열어 주십시오.");
+    if (!window.crypto || !crypto.subtle) throw new Error("이 브라우저에서는 보안 기능(crypto.subtle)을 사용할 수 없습니다. http://localhost 또는 https 주소로 접속해 주세요.");
     const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]);
     const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: unhex(saltHex), iterations: ITER }, key, 256);
     return hex(bits);
@@ -91,19 +91,19 @@
     const phone = fmtPhone(input.phone);
     const company = String(input.company || "").trim();
     const bizNo = String(input.bizNo || "").trim();
-    if (name.length < 2) errors.name = "이름을 2자 이상 입력해 주십시오.";
-    if (!isEmail(email)) errors.email = "이메일 형식을 확인해 주십시오.";
+    if (name.length < 2) errors.name = "이름을 2자 이상 입력해 주세요.";
+    if (!isEmail(email)) errors.email = "이메일 형식을 확인해 주세요.";
     else if (findByEmail(email)) errors.email = "이미 가입된 이메일입니다.";
     const pp = pwProblem(input.password); if (pp) errors.password = pp;
-    if (input.password !== input.password2) errors.password2 = "비밀번호가 서로 다릅니다.";
-    if (!isMobile(phone)) errors.phone = "휴대폰 번호를 확인해 주십시오. (예: 010-1234-5678)";
+    if (input.password !== input.password2) errors.password2 = "비밀번호가 일치하지 않습니다.";
+    if (!isMobile(phone)) errors.phone = "휴대폰 번호를 확인해 주세요. (예: 010-1234-5678)";
     if (type === "biz") {
-      if (!company) errors.company = "업체명을 입력해 주십시오.";
+      if (!company) errors.company = "업체명을 입력해 주세요.";
       if (bizNo && !isBizNo(bizNo)) errors.bizNo = "사업자등록번호가 올바르지 않습니다.";
     }
     const a = input.agree || {};
-    if (!a.age) errors.age = "만 14세 이상만 가입할 수 있습니다.";
-    if (!a.terms || !a.privacy) errors.agree = "필수 약관에 동의해 주십시오.";
+    if (!a.age) errors.age = "만 14세 이상만 가입하실 수 있습니다.";
+    if (!a.terms || !a.privacy) errors.agree = "필수 약관에 동의해 주세요.";
     if (Object.keys(errors).length) return { ok: false, errors };
 
     const salt = newSalt();
@@ -129,11 +129,11 @@
 
   async function login(emailIn, pw, remember) {
     const email = normEmail(emailIn);
-    if (!email || !pw) return { ok: false, error: "이메일과 비밀번호를 입력해 주십시오." };
+    if (!email || !pw) return { ok: false, error: "이메일과 비밀번호를 입력해 주세요." };
     const f = failInfo(email);
     if (f.until && f.until > Date.now()) {
       const min = Math.ceil((f.until - Date.now()) / 60000);
-      return { ok: false, error: `비밀번호를 ${MAX_FAIL}회 잘못 입력해 잠시 잠겼습니다. ${min}분 후 다시 시도해 주십시오.` };
+      return { ok: false, error: `비밀번호를 ${MAX_FAIL}회 잘못 입력하여 로그인이 일시적으로 제한되었습니다. ${min}분 후 다시 시도해 주세요.` };
     }
     const m = findByEmail(email);
     const ok = m ? sameHash(await hashPw(pw, m.salt), m.hash) : (await hashPw(pw, "00"), false);
@@ -141,8 +141,8 @@
       const n = (f.until && f.until <= Date.now() ? 0 : f.n) + 1;
       setFail(email, n >= MAX_FAIL ? { n, until: Date.now() + LOCK_MIN * 60000 } : { n, until: 0 });
       const left = MAX_FAIL - n;
-      if (left <= 0) return { ok: false, error: `비밀번호를 ${MAX_FAIL}회 잘못 입력해 ${LOCK_MIN}분간 로그인이 잠겼습니다.` };
-      return { ok: false, error: "이메일 또는 비밀번호가 맞지 않습니다." + (left > 0 && n >= 3 ? ` (${left}회 더 틀리면 ${LOCK_MIN}분간 잠깁니다)` : "") };
+      if (left <= 0) return { ok: false, error: `비밀번호를 ${MAX_FAIL}회 잘못 입력하여 ${LOCK_MIN}분간 로그인이 제한됩니다.` };
+      return { ok: false, error: "이메일 또는 비밀번호가 일치하지 않습니다." + (left > 0 && n >= 3 ? ` (${left}회 더 틀리시면 ${LOCK_MIN}분간 로그인이 제한됩니다)` : "") };
     }
     setFail(email, null);
     const list = members(); const t = list.find((x) => x.id === m.id); t.lastLoginAt = new Date().toISOString(); saveMembers(list);
@@ -157,13 +157,13 @@
     const errors = {};
     const name = String(input.name || "").trim();
     const phone = fmtPhone(input.phone);
-    if (name.length < 2) errors.name = "이름을 2자 이상 입력해 주십시오.";
-    if (!isMobile(phone)) errors.phone = "휴대폰 번호를 확인해 주십시오.";
+    if (name.length < 2) errors.name = "이름을 2자 이상 입력해 주세요.";
+    if (!isMobile(phone)) errors.phone = "휴대폰 번호를 확인해 주세요.";
     let company = "", bizNo = "";
     if (me.type === "biz") {
       company = String(input.company || "").trim();
       bizNo = String(input.bizNo || "").trim();
-      if (!company) errors.company = "업체명을 입력해 주십시오.";
+      if (!company) errors.company = "업체명을 입력해 주세요.";
       if (bizNo && !isBizNo(bizNo)) errors.bizNo = "사업자등록번호가 올바르지 않습니다.";
     }
     if (Object.keys(errors).length) return { ok: false, errors };
@@ -176,10 +176,10 @@
   async function changePassword(oldPw, newPw, newPw2) {
     const me = current(); if (!me) return { ok: false, errors: { _: "로그인이 필요합니다." } };
     const list = members(); const t = list.find((x) => x.id === me.id);
-    if (!sameHash(await hashPw(oldPw || "", t.salt), t.hash)) return { ok: false, errors: { oldPw: "현재 비밀번호가 맞지 않습니다." } };
+    if (!sameHash(await hashPw(oldPw || "", t.salt), t.hash)) return { ok: false, errors: { oldPw: "현재 비밀번호가 일치하지 않습니다." } };
     const pp = pwProblem(newPw); if (pp) return { ok: false, errors: { newPw: pp } };
-    if (newPw !== newPw2) return { ok: false, errors: { newPw2: "새 비밀번호가 서로 다릅니다." } };
-    if (oldPw === newPw) return { ok: false, errors: { newPw: "현재 비밀번호와 다른 비밀번호를 입력해 주십시오." } };
+    if (newPw !== newPw2) return { ok: false, errors: { newPw2: "새 비밀번호가 일치하지 않습니다." } };
+    if (oldPw === newPw) return { ok: false, errors: { newPw: "현재 비밀번호와 다른 비밀번호를 입력해 주세요." } };
     t.salt = newSalt(); t.hash = await hashPw(newPw, t.salt); t.pwChangedAt = new Date().toISOString();
     saveMembers(list);
     return { ok: true };
@@ -187,7 +187,7 @@
   async function withdraw(pw) {
     const me = current(); if (!me) return { ok: false, error: "로그인이 필요합니다." };
     const list = members(); const t = list.find((x) => x.id === me.id);
-    if (!sameHash(await hashPw(pw || "", t.salt), t.hash)) return { ok: false, error: "비밀번호가 맞지 않습니다." };
+    if (!sameHash(await hashPw(pw || "", t.salt), t.hash)) return { ok: false, error: "비밀번호가 일치하지 않습니다." };
     saveMembers(list.filter((x) => x.id !== me.id));
     clearSession();
     return { ok: true };

@@ -53,7 +53,7 @@
     const next = SiteNav.params().get("next");
     if (next) {
       $("#toSignup").href = "signup.html?next=" + encodeURIComponent(next);
-      if (/^mypage\.html/.test(next)) { const m = $("#loginInfo"); m.textContent = "로그인이 필요한 화면입니다."; m.classList.remove("hidden"); }
+      if (/^mypage\.html/.test(next)) { const m = $("#loginInfo"); m.textContent = "로그인 후 이용하실 수 있는 페이지입니다."; m.classList.remove("hidden"); }
     }
     $("#findPw").onclick = () => $("#findPwHelp").classList.toggle("hidden");
     const form = $("#loginForm");
@@ -129,7 +129,7 @@
     try {
       if (sessionStorage.getItem(WELCOME_KEY)) {
         sessionStorage.removeItem(WELCOME_KEY);
-        const w = $("#myWelcome"); w.textContent = `가입을 환영합니다, ${me.name}님. 이제 상담·문의 시 연락처가 자동으로 입력되고 진행 상황을 여기서 볼 수 있습니다.`; w.classList.remove("hidden");
+        const w = $("#myWelcome"); w.textContent = `${me.name}님, 회원가입을 환영합니다. 이제 상담·문의 시 연락처가 자동으로 입력되며, 진행 상황을 이곳에서 확인하실 수 있습니다.`; w.classList.remove("hidden");
       }
     } catch (e) {}
 
@@ -157,13 +157,13 @@
 
       const FLOW = ["주문 접수", "적용 확인", "입금 확인", "출고 준비", "배송 중", "배송 완료"];
       const FLOW_HELP = {
-        "주문 접수": "담당자가 차량 적용 여부를 확인하고 연락드립니다.",
-        "적용 확인": "적용 확인이 끝났습니다. 안내드린 계좌로 입금해 주십시오.",
-        "입금 확인": "입금이 확인되었습니다. 출고를 준비합니다.",
-        "출고 준비": "상품을 포장하고 있습니다. 가공 상품은 가공 후 출고됩니다.",
-        "배송 중": "택배로 이동 중입니다. 아래 송장번호로 조회할 수 있습니다.",
+        "주문 접수": "담당자가 차량 적용 여부를 확인한 뒤 연락드리겠습니다.",
+        "적용 확인": "적용 확인이 완료되었습니다. 안내해 드린 계좌로 입금해 주세요.",
+        "입금 확인": "입금이 확인되었습니다. 출고를 준비하고 있습니다.",
+        "출고 준비": "상품을 포장하고 있습니다. 가공 상품은 가공을 마친 뒤 출고됩니다.",
+        "배송 중": "상품이 택배로 배송 중입니다. 아래 송장번호로 배송 조회를 하실 수 있습니다.",
         "배송 완료": "배송이 완료되었습니다. 이용해 주셔서 감사합니다.",
-        "취소 요청": "취소 요청이 접수되었습니다. 담당자가 확인 후 처리합니다.",
+        "취소 요청": "취소 요청이 접수되었습니다. 담당자가 확인 후 처리해 드리겠습니다.",
         "취소": "취소된 주문입니다.",
       };
       const obadge = (s) => `<span class="status s${s === "취소" ? 4 : s === "배송 완료" ? 3 : s === "주문 접수" ? 0 : s === "취소 요청" ? 1 : 2}">${esc(s || "주문 접수")}</span>`;
@@ -190,11 +190,11 @@
           ? `<div class="my-track"><span>${esc(o.courier || "택배")} 송장번호</span><b>${esc(o.tracking)}</b><button type="button" class="link-plain" data-copy="${esc(o.tracking)}">복사</button></div>`
           : `<div class="my-track muted"><span>송장번호</span><b>출고 후 안내</b></div>`;
         const cancel = canCancel(o)
-          ? `<div class="my-cancel"><button type="button" class="btn btn-ghost danger" data-cancel="${esc(o.id)}">주문 취소 요청</button><span class="small muted">입금 전 주문만 요청할 수 있습니다.</span></div>` : "";
+          ? `<div class="my-cancel"><button type="button" class="btn btn-ghost danger" data-cancel="${esc(o.id)}">주문 취소 요청</button><span class="small muted">입금 전 주문만 취소 요청하실 수 있습니다.</span></div>` : "";
         return `<li><details${idx === 0 ? " open" : ""}><summary><span class="my-id">${esc(o.id)}</span><span class="my-what">${esc(what)}</span><span class="my-date">${esc(day(o.createdAt))}</span>${obadge(o.status)}</summary>
           <div class="my-order-body">${steps(o)}${track}
           <table class="info-table">${rows.map(([k, v]) => `<tr><th>${k}</th><td style="white-space:pre-line">${esc(v)}</td></tr>`).join("")}</table>${cancel}</div></details></li>`;
-      }).join("")}</ul>` : `<p class="my-empty">아직 주문 내역이 없습니다. 로그인한 상태에서 주문하면 여기에서 진행 상황과 송장번호를 볼 수 있습니다. <a href="index.html#top">부품 찾기 →</a></p>`;
+      }).join("")}</ul>` : `<p class="my-empty">아직 주문 내역이 없습니다. 로그인 후 주문하시면 이곳에서 진행 상황과 송장번호를 확인하실 수 있습니다. <a href="index.html#top">부품 찾기 →</a></p>`;
 
       // 송장번호 복사
       $("#myOrders").querySelectorAll("[data-copy]").forEach((b) => b.onclick = async () => {
@@ -203,7 +203,7 @@
       });
       // 취소 요청: 두 번 눌러 확인
       $("#myOrders").querySelectorAll("[data-cancel]").forEach((b) => b.onclick = () => {
-        if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "취소 요청 확인 (한 번 더 누르기)"; return; }
+        if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "한 번 더 누르시면 취소 요청됩니다"; return; }
         const all = get("carib_orders"); const t = all.find((x) => x.id === b.dataset.cancel);
         if (t && canCancel(t)) { t.status = "취소 요청"; t.cancelRequestedAt = new Date().toISOString(); localStorage.setItem("carib_orders", JSON.stringify(all)); if (window.Remote) Remote.cancelOrder(t); }
         renderLists();
@@ -215,11 +215,11 @@
         const rows = [["차대번호", r.vehicle?.vin], ["디스크", disc], ["규격", r.disc?.spec], ["수량", r.disc?.qty], ["가공 타입", r.needs?.ctype], ["예상 가공비", r.needs?.fee], ["요청 사항", r.needs?.request], ["희망 일정", r.needs?.schedule], ["필요 품목", r.contact?.items]].filter(([, v]) => v);
         return `<li><details><summary><span class="my-id">${esc(r.id)}</span><span class="my-what">${esc(car)}${disc ? " · " + esc(disc) : ""}</span><span class="my-date">${esc(r.date || day(r.createdAt))}</span>${badge(r.status)}</summary>
           <table class="info-table">${rows.map(([k, v]) => `<tr><th>${k}</th><td>${esc(v)}</td></tr>`).join("")}</table></details></li>`;
-      }).join("")}</ul>` : `<p class="my-empty">로그인한 상태에서 만든 가공 의뢰가 여기에 표시됩니다. <a href="consult.html">가공 상담 시작 →</a></p>`;
+      }).join("")}</ul>` : `<p class="my-empty">로그인 후 작성하신 가공 의뢰가 이곳에 표시됩니다. <a href="consult.html">가공 상담 시작 →</a></p>`;
 
       $("#myInqs").innerHTML = inqs.length ? `<ul class="my-list">${inqs.map((r) => `<li><details><summary><span class="my-id">${esc(dt(r.at))}</span><span class="my-what">${esc((r.message || "").split("\n")[0].slice(0, 50))}</span>${badge(r.status)}</summary>
           <p class="my-msg">${esc(r.message)}</p></details></li>`).join("")}</ul>`
-        : `<p class="my-empty">로그인한 상태에서 남긴 문의가 여기에 표시됩니다.</p>`;
+        : `<p class="my-empty">로그인 후 남기신 문의가 이곳에 표시됩니다.</p>`;
     }
 
     function fillProfile() {
@@ -258,8 +258,8 @@
       // 확인 창(confirm) 대신 화면 안에서 두 번 눌러 확인 — 공유 페이지에서는 브라우저 확인 창이 뜨지 않음
       if (!wd.dataset.armed) {
         wd.dataset.armed = "1";
-        btn.textContent = "정말 탈퇴합니다 (한 번 더 누르기)";
-        err.textContent = "탈퇴하면 회원 정보는 되돌릴 수 없습니다. 계속하려면 버튼을 한 번 더 눌러 주십시오.";
+        btn.textContent = "탈퇴하시려면 한 번 더 눌러 주세요";
+        err.textContent = "탈퇴하시면 회원 정보를 복구할 수 없습니다. 계속하시려면 버튼을 한 번 더 눌러 주세요.";
         err.hidden = false;
         return;
       }

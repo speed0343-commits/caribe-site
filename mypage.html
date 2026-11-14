@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>마이페이지 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+  <script>
+    // 로그인하지 않았으면 화면을 그리기 전에 로그인 페이지로 이동
+    (function () {
+      var s = null;
+      try { s = sessionStorage.getItem("carib_session") || localStorage.getItem("carib_session"); } catch (e) {}
+      if (!s && !window.__BUNDLE__) location.replace("login.html?next=mypage.html");
+    })();
+  </script>
+</head>
+<body data-page="mypage">
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /></a>
+      <nav>
+        <a href="index.html#top">부품 검색</a>
+        <a href="products.html">전체 상품</a>
+        <a href="technology.html">카오스 가공</a>
+        <a href="consult.html" class="keep">가공 상담</a>
+        <a href="about.html">회사 소개</a>
+        <a href="index.html#inquiry">문의</a>
+        <a class="nav-auth keep nav-login" href="login.html">로그인</a>
+        <a class="cart-btn" href="index.html?cart=1" aria-label="장바구니">장바구니 <b class="cart-count">0</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-band">
+    <div class="wrap">
+      <h1 id="myTitle">마이페이지</h1>
+      <p class="auth-band-sub" id="mySub"></p>
+    </div>
+  </section>
+
+  <main class="wrap my-main">
+    <p class="auth-msg hidden" id="myWelcome" role="status"></p>
+
+    <div class="my-stats" id="myStats"></div>
+
+    <section class="panel" id="myOrderSec">
+      <div class="my-head"><h2>주문 내역</h2><a class="btn btn-ghost" href="index.html#top">부품 검색</a></div>
+      <div id="myGuestLink"></div>
+      <div id="myOrders"></div>
+    </section>
+
+    <section class="panel" id="myReqSec">
+      <div class="my-head"><h2>가공 의뢰 내역</h2><a class="btn btn-ghost" href="consult.html">새 가공 상담</a></div>
+      <div id="myReqs"></div>
+    </section>
+
+    <section class="panel" id="myInqSec">
+      <div class="my-head"><h2>문의 내역</h2><a class="btn btn-ghost" href="index.html#inquiry">새 문의</a></div>
+      <div id="myInqs"></div>
+    </section>
+
+    <div class="my-cols">
+      <section class="panel">
+        <h2>회원정보 수정</h2>
+        <form id="profileForm" novalidate class="my-form">
+          <label>이메일 (아이디) <input name="email" disabled /></label>
+          <label data-for="name"><span class="lbl">이름</span><input name="name" maxlength="30" /><small class="field-err"></small></label>
+          <label data-for="phone"><span class="lbl">휴대폰</span><input name="phone" type="tel" inputmode="numeric" maxlength="13" /><small class="field-err"></small></label>
+          <label class="biz-only" data-for="company"><span class="lbl">업체명</span><input name="company" maxlength="40" /><small class="field-err"></small></label>
+          <label class="biz-only" data-for="bizNo"><span class="lbl">사업자등록번호 (선택)</span><input name="bizNo" inputmode="numeric" maxlength="12" placeholder="000-00-00000" /><small class="field-err"></small></label>
+          <label class="check"><input type="checkbox" name="marketing" /> 할인·신제품 안내 수신 동의 (선택)</label>
+          <p class="ok hidden" id="profileOk">저장되었습니다.</p>
+          <button class="btn btn-primary" type="submit">저장</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>비밀번호 변경</h2>
+        <form id="pwForm" novalidate class="my-form">
+          <label data-for="oldPw"><span class="lbl">현재 비밀번호</span><input name="oldPw" type="password" autocomplete="current-password" /><small class="field-err"></small></label>
+          <label data-for="newPw"><span class="lbl">새 비밀번호</span><input name="newPw" type="password" autocomplete="new-password" maxlength="64" /><small class="field-hint">영문·숫자 포함 8자 이상</small><small class="field-err"></small></label>
+          <label data-for="newPw2"><span class="lbl">새 비밀번호 확인</span><input name="newPw2" type="password" autocomplete="new-password" maxlength="64" /><small class="field-err"></small></label>
+          <p class="ok hidden" id="pwOk">비밀번호가 변경되었습니다.</p>
+          <button class="btn btn-primary" type="submit">변경</button>
+        </form>
+
+        <details class="withdraw">
+          <summary>회원 탈퇴</summary>
+          <form id="withdrawForm" novalidate class="my-form">
+            <p class="muted small">탈퇴하면 회원 정보가 삭제되고 되돌릴 수 없습니다. 이미 접수된 의뢰·문의는 처리 기록으로 남습니다.</p>
+            <label>비밀번호 확인 <input name="pw" type="password" autocomplete="current-password" /></label>
+            <p class="auth-error" id="withdrawErr" role="alert" hidden></p>
+            <button class="btn btn-ghost danger" type="submit">탈퇴하기</button>
+          </form>
+        </details>
+      </section>
+    </div>
+
+    <div class="my-logout"><button class="btn btn-ghost" type="button" data-logout>로그아웃</button></div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+        <p>수입차 부품 유통과<br />브레이크 디스크 카오스 가공</p>
+      </div>
+      <div class="footer-col">
+        <b class="footer-h">바로가기</b>
+        <div class="footer-links">
+          <a href="about.html">회사 소개</a><a href="technology.html">카오스 가공</a>
+          <a href="index.html#top">부품 검색</a><a href="consult.html">가공 상담</a>
+          <a href="products.html">전체 상품</a><a href="index.html#inquiry">문의</a>
+        </div>
+      </div>
+      <div class="footer-col footer-cs">
+        <b class="footer-h">고객센터</b>
+        <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
+        <span>평일 09:00 ~ 18:00</span>
+        <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
+        <a class="footer-btn" href="index.html#inquiry">문의 남기기</a>
+      </div>
+    </div>
+    <div class="wrap footer-legal">
+      <p><span>(주)카리브무역</span> <i>|</i> <span>대표 김철민</span> <i>|</i> <span>사업자등록번호 608-86-12959</span> <i>|</i> <span>통신판매업 신고 제2023-울산남구-1093호</span><br /><span>울산광역시 북구 진장로 16</span></p>
+      <p>© 2026 CARIBE TRADING. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site-nav.js"></script>
+  <script src="auth.js"></script>
+  <script src="member.js"></script>
+</body>
+</html>

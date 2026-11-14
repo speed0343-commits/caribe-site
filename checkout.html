@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>주문서 작성 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+</head>
+<body data-page="checkout">
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /></a>
+      <nav>
+        <a href="index.html#top">부품 검색</a>
+        <a href="products.html">전체 상품</a>
+        <a href="technology.html">카오스 가공</a>
+        <a href="consult.html" class="keep">가공 상담</a>
+        <a href="about.html">회사 소개</a>
+        <a href="index.html#inquiry">문의</a>
+        <a class="nav-auth keep nav-login" href="login.html">로그인</a>
+        <a class="cart-btn" href="index.html?cart=1" aria-label="장바구니">장바구니 <b class="cart-count">0</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-band">
+    <div class="wrap">
+      <h1 id="coTitle">주문서 작성</h1>
+      <ol class="co-steps" aria-label="주문 단계">
+        <li class="on">장바구니</li><li class="on" id="stepForm">주문서 작성</li><li id="stepDone">주문 접수</li>
+      </ol>
+    </div>
+  </section>
+
+  <main class="wrap co-main">
+    <!-- 장바구니가 비었을 때 -->
+    <div class="auth-card co-empty hidden" id="coEmpty">
+      <h2>장바구니가 비어 있습니다</h2>
+      <p class="muted">부품 검색에서 차량에 맞는 디스크를 담은 뒤 주문해 주십시오.</p>
+      <a class="btn btn-primary" href="index.html#top">부품 검색으로 가기</a>
+    </div>
+
+    <form id="coForm" class="co-grid hidden" novalidate>
+      <div class="co-left">
+        <section class="co-box">
+          <h2>주문 상품</h2>
+          <div id="coItems"></div>
+          <p class="co-note" id="coChaosNote" hidden>카오스 가공이 포함된 상품은 가공을 마친 뒤 출고되며, 가공 일정과 최종 가공비는 담당자가 안내합니다.</p>
+          <a class="link-plain" href="index.html?cart=1">장바구니에서 수량 변경</a>
+        </section>
+
+        <section class="co-box">
+          <div class="co-head"><h2>주문자 정보</h2><span class="co-login" id="coLogin"></span></div>
+          <div class="auth-grid">
+            <label data-for="oName"><span class="lbl">이름 / 업체명 <em>*</em></span><input id="oName" name="oName" autocomplete="name" maxlength="40" /><small class="field-err"></small></label>
+            <label data-for="oPhone"><span class="lbl">휴대폰 <em>*</em></span><input id="oPhone" name="oPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" maxlength="13" /><small class="field-err"></small></label>
+            <label class="full" data-for="oEmail"><span class="lbl">이메일 <i>(선택 · 주문 안내 수신)</i></span><input id="oEmail" name="oEmail" type="email" autocomplete="email" placeholder="name@example.com" /><small class="field-err"></small></label>
+          </div>
+        </section>
+
+        <section class="co-box">
+          <div class="co-head"><h2>배송지</h2><label class="check"><input type="checkbox" id="sameAsOrderer" checked /> 주문자 정보와 같음</label></div>
+          <div class="auth-grid">
+            <label data-for="rName"><span class="lbl">받는 분 <em>*</em></span><input id="rName" name="rName" autocomplete="shipping name" maxlength="40" /><small class="field-err"></small></label>
+            <label data-for="rPhone"><span class="lbl">받는 분 연락처 <em>*</em></span><input id="rPhone" name="rPhone" type="tel" inputmode="numeric" autocomplete="shipping tel" placeholder="010-0000-0000" maxlength="13" /><small class="field-err"></small></label>
+            <label data-for="zip"><span class="lbl">우편번호 <em>*</em></span>
+              <span class="co-zip"><input id="zip" name="zip" inputmode="numeric" autocomplete="shipping postal-code" maxlength="5" placeholder="5자리" /><button type="button" class="btn btn-ghost" id="findAddr">주소 검색</button></span>
+              <small class="field-err"></small>
+            </label>
+            <span class="co-addr-help" id="addrHelp" hidden></span>
+            <label class="full" data-for="addr1"><span class="lbl">주소 <em>*</em></span><input id="addr1" name="addr1" autocomplete="shipping address-line1" placeholder="도로명 또는 지번 주소" /><small class="field-err"></small></label>
+            <label class="full" data-for="addr2"><span class="lbl">상세 주소 <em>*</em></span><input id="addr2" name="addr2" autocomplete="shipping address-line2" placeholder="동·호수, 업체명 등" /><small class="field-err"></small></label>
+            <div class="co-addr-layer full" id="addrLayer" hidden></div>
+            <label class="full"><span class="lbl">배송 메모</span>
+              <select id="memoSel">
+                <option value="">선택 안 함</option>
+                <option>부재 시 경비실에 맡겨 주십시오</option>
+                <option>부재 시 문 앞에 놓아 주십시오</option>
+                <option>배송 전 연락 주십시오</option>
+                <option>정비소 영업시간(평일 9~18시) 내 배송 부탁드립니다</option>
+                <option value="custom">직접 입력</option>
+              </select>
+              <input id="memoText" maxlength="60" placeholder="배송 메모 직접 입력" hidden />
+            </label>
+          </div>
+        </section>
+
+        <section class="co-box">
+          <h2>차량 확인</h2>
+          <p class="co-note">차대번호를 남기시면 출고 전에 맞는지 다시 확인합니다.</p>
+          <div class="auth-grid">
+            <label class="full" data-for="vin"><span class="lbl">차대번호 <i>(권장 · 17자리)</i></span><input id="vin" name="vin" maxlength="17" autocomplete="off" placeholder="예: WDD2130421A123456" /><small class="field-err"></small></label>
+          </div>
+        </section>
+
+        <section class="co-box">
+          <h2>결제 방법</h2>
+          <div class="co-pay" role="radiogroup" aria-label="결제 방법" id="payList"></div>
+          <p class="co-note" id="payNote"></p>
+        </section>
+
+        <section class="co-box">
+          <h2>증빙 서류</h2>
+          <div class="co-pay co-pay-sm" role="radiogroup" aria-label="증빙 서류">
+            <label class="co-pay-opt"><input type="radio" name="receipt" value="none" checked /><b>필요 없음</b></label>
+            <label class="co-pay-opt"><input type="radio" name="receipt" value="cash" /><b>현금영수증</b></label>
+            <label class="co-pay-opt"><input type="radio" name="receipt" value="tax" /><b>세금계산서</b></label>
+          </div>
+          <div class="auth-grid" id="receiptFields" hidden>
+            <label data-for="receiptNo"><span class="lbl" id="receiptNoLbl">휴대폰 번호</span><input id="receiptNo" name="receiptNo" inputmode="numeric" maxlength="13" /><small class="field-err"></small></label>
+            <label data-for="receiptEmail" id="receiptEmailWrap" hidden><span class="lbl">세금계산서 받을 이메일</span><input id="receiptEmail" name="receiptEmail" type="email" /><small class="field-err"></small></label>
+          </div>
+        </section>
+
+        <fieldset class="agree-box" data-for="agree">
+          <legend>주문 동의</legend>
+          <label class="check"><input type="checkbox" id="agreeOrder" /> [필수] 주문 상품과 결제 조건을 확인했으며, 차량 적용 확인 후 진행되는 것에 동의합니다.</label>
+          <label class="check"><input type="checkbox" id="agreePrivacy" /> [필수] 주문·배송을 위한 개인정보(이름, 연락처, 주소, 차대번호) 수집·이용에 동의합니다.</label>
+          <small class="field-err"></small>
+        </fieldset>
+      </div>
+
+      <aside class="co-summary" aria-label="결제 금액">
+        <h2>결제 금액</h2>
+        <dl id="coSum"></dl>
+        <p class="co-total"><span>결제 예정 금액</span><b id="coTotal">0원</b></p>
+        <p class="co-note" id="coSumNote"></p>
+        <p class="auth-error" id="coError" role="alert" hidden></p>
+        <button class="btn btn-primary auth-submit" type="submit" id="coSubmit">주문하기</button>
+        <p class="co-note">주문 접수 후 담당자가 차량 적용 여부를 확인하고 연락드립니다. 확인 전에는 결제가 진행되지 않습니다.</p>
+      </aside>
+    </form>
+
+    <!-- 주문 완료 -->
+    <section class="auth-card wide co-done hidden" id="coDone" aria-live="polite"></section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+        <p>수입차 부품 유통과<br />브레이크 디스크 카오스 가공</p>
+      </div>
+      <div class="footer-col">
+        <b class="footer-h">바로가기</b>
+        <div class="footer-links">
+          <a href="about.html">회사 소개</a><a href="technology.html">카오스 가공</a>
+          <a href="index.html#top">부품 검색</a><a href="consult.html">가공 상담</a>
+          <a href="products.html">전체 상품</a><a href="index.html#inquiry">문의</a>
+        </div>
+      </div>
+      <div class="footer-col footer-cs">
+        <b class="footer-h">고객센터</b>
+        <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
+        <span>평일 09:00 ~ 18:00</span>
+        <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
+        <a class="footer-btn" href="index.html#inquiry">문의 남기기</a>
+      </div>
+    </div>
+    <div class="wrap footer-legal">
+      <p><span>(주)카리브무역</span> <i>|</i> <span>대표 김철민</span> <i>|</i> <span>사업자등록번호 608-86-12959</span> <i>|</i> <span>통신판매업 신고 제2023-울산남구-1093호</span><br /><span>울산광역시 북구 진장로 16</span></p>
+      <p>© 2026 CARIBE TRADING. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site-nav.js"></script>
+  <script src="auth.js"></script>
+  <script src="catalog-data.js"></script>
+  <script src="data.js"></script>
+  <script src="core.js"></script>
+  <script src="checkout.js"></script>
+</body>
+</html>

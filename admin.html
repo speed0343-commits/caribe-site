@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>관리자 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /><span class="logo-tag">ADMIN</span></a>
+      <nav>
+        <a href="index.html">사이트로</a>
+        <a href="consult.html" class="keep">가공 상담</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding-top:28px">
+    <div class="stat-row" id="stats"></div>
+
+    <section class="panel">
+      <div class="admin-tabs">
+        <button type="button" data-tab="ord">주문</button>
+        <button type="button" class="on" data-tab="req">가공 의뢰</button>
+        <button type="button" data-tab="inq">일반 문의</button>
+        <button type="button" data-tab="chat">상담사 채팅 <span class="unread" id="chatBadge" hidden>0</span></button>
+        <button type="button" data-tab="ai">AI 미답변 <span class="unread" id="aiBadge" hidden>0</span></button>
+        <button type="button" data-tab="mem">회원</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <input id="q" placeholder="의뢰번호·고객·연락처·차대번호 검색" style="flex:1;min-width:200px" />
+        <select id="statusFilter"><option value="">전체 상태</option></select>
+      </div>
+      <div class="table-wrap"><table class="admin-table" id="table"></table></div>
+    </section>
+
+    <div id="detail"></div>
+  </main>
+
+  <script src="site-nav.js"></script>
+  <script src="catalog-data.js"></script>
+  <script src="data.js"></script>
+  <script src="core.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

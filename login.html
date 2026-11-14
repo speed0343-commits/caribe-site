@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>로그인 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+</head>
+<body data-page="login">
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /></a>
+      <nav>
+        <a href="index.html#top">부품 검색</a>
+        <a href="products.html">전체 상품</a>
+        <a href="technology.html">카오스 가공</a>
+        <a href="consult.html" class="keep">가공 상담</a>
+        <a href="about.html">회사 소개</a>
+        <a href="index.html#inquiry">문의</a>
+        <a class="nav-auth keep nav-login" href="login.html">로그인</a>
+        <a class="cart-btn" href="index.html?cart=1" aria-label="장바구니">장바구니 <b class="cart-count">0</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-band">
+    <div class="wrap">
+      <h1>로그인</h1>
+    </div>
+  </section>
+
+  <main class="wrap auth-main">
+    <div class="auth-card">
+      <p class="auth-msg hidden" id="loginInfo" role="status"></p>
+      <form id="loginForm" novalidate>
+        <label>이메일
+          <input name="email" type="email" autocomplete="username" required placeholder="name@example.com" />
+        </label>
+        <label>비밀번호
+          <span class="pw-field"><input name="password" type="password" autocomplete="current-password" required /><button type="button" class="pw-toggle" aria-label="비밀번호 보기">보기</button></span>
+        </label>
+        <div class="auth-row">
+          <label class="check"><input type="checkbox" name="remember" /> 로그인 상태 유지</label>
+          <button type="button" class="link-plain" id="findPw">비밀번호를 잊으셨나요?</button>
+        </div>
+        <p class="auth-error" id="loginError" role="alert" hidden></p>
+        <button class="btn btn-primary auth-submit" type="submit">로그인</button>
+      </form>
+      <p class="auth-help hidden" id="findPwHelp">010-5459-3111로 전화 주시면 확인 후 재설정해 드립니다.</p>
+      <div class="auth-alt">
+        <span>아직 회원이 아니신가요?</span>
+        <a class="btn btn-ghost" id="toSignup" href="signup.html">회원가입</a>
+      </div>
+      <p class="auth-help">회원이 아니어도 검색, 상담, 문의를 모두 쓸 수 있습니다. 로그인하면 진행 상황을 볼 수 있습니다.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+        <p>수입차 부품 유통과<br />브레이크 디스크 카오스 가공</p>
+      </div>
+      <div class="footer-col">
+        <b class="footer-h">바로가기</b>
+        <div class="footer-links">
+          <a href="about.html">회사 소개</a><a href="technology.html">카오스 가공</a>
+          <a href="index.html#top">부품 검색</a><a href="consult.html">가공 상담</a>
+          <a href="products.html">전체 상품</a><a href="index.html#inquiry">문의</a>
+        </div>
+      </div>
+      <div class="footer-col footer-cs">
+        <b class="footer-h">고객센터</b>
+        <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
+        <span>평일 09:00 ~ 18:00</span>
+        <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
+        <a class="footer-btn" href="index.html#inquiry">문의 남기기</a>
+      </div>
+    </div>
+    <div class="wrap footer-legal">
+      <p><span>(주)카리브무역</span> <i>|</i> <span>대표 김철민</span> <i>|</i> <span>사업자등록번호 608-86-12959</span> <i>|</i> <span>통신판매업 신고 제2023-울산남구-1093호</span><br /><span>울산광역시 북구 진장로 16</span></p>
+      <p>© 2026 CARIBE TRADING. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site-nav.js"></script>
+  <script src="auth.js"></script>
+  <script src="data/demo-accounts.js"></script>
+  <script src="member.js"></script>
+</body>
+</html>

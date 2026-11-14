@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 가공 상담 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /></a>
+      <nav>
+        <a href="index.html#top">부품 검색</a>
+        <a href="products.html">전체 상품</a>
+        <a href="technology.html">카오스 가공</a>
+        <a href="consult.html" class="active keep">가공 상담</a>
+        <a href="about.html">회사 소개</a>
+        <a href="index.html#inquiry">문의</a>
+        <a class="nav-auth keep nav-login" href="login.html">로그인</a>
+        <a class="cart-btn" href="index.html?cart=1" aria-label="장바구니">장바구니 <b class="cart-count">0</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero hero-plain">
+    <div class="wrap">
+      <h1>가공 상담</h1>
+      <p class="lead">몇 가지 질문에 답하시면 2분 안에 의뢰서가 만들어집니다.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="consult-grid">
+      <section class="consult-chat" aria-label="가공 상담">
+        <div class="head">
+          <div><b>AI 가공 상담</b><div class="muted small">등록된 차량과 디스크 정보로 안내합니다</div></div>
+          <button class="btn btn-ghost" id="restart" type="button" style="padding:8px 12px">처음부터</button>
+        </div>
+        <div class="progress" id="progress"></div>
+        <div class="chat-log" id="log"></div>
+        <form class="chat-input" id="form" autocomplete="off">
+          <input id="text" placeholder="답변이나 궁금한 점을 입력하십시오" />
+          <button type="submit">전송</button>
+        </form>
+      </section>
+
+      <aside class="summary" aria-label="요구사항 요약">
+        <h3>지금까지 정리된 내용</h3>
+        <dl id="summary"></dl>
+        <div class="actions">
+          <button class="btn btn-ghost" id="toInquiry" type="button">상담 대신 문의 남기기</button>
+        </div>
+        <p class="muted small" style="margin:12px 0 0">답한 내용이 여기에 정리됩니다.</p>
+      </aside>
+    </div>
+
+    <div id="docArea"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+        <p>수입차 부품 유통과<br />브레이크 디스크 카오스 가공</p>
+      </div>
+      <div class="footer-col">
+        <b class="footer-h">바로가기</b>
+        <div class="footer-links">
+          <a href="about.html">회사 소개</a><a href="technology.html">카오스 가공</a>
+          <a href="index.html#top">부품 검색</a><a href="consult.html">가공 상담</a>
+          <a href="products.html">전체 상품</a><a href="index.html#inquiry">문의</a>
+        </div>
+      </div>
+      <div class="footer-col footer-cs">
+        <b class="footer-h">고객센터</b>
+        <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
+        <span>평일 09:00 ~ 18:00</span>
+        <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
+        <a class="footer-btn" href="index.html#inquiry">문의 남기기</a>
+      </div>
+    </div>
+    <div class="wrap footer-legal">
+      <p><span>(주)카리브무역</span> <i>|</i> <span>대표 김철민</span> <i>|</i> <span>사업자등록번호 608-86-12959</span> <i>|</i> <span>통신판매업 신고 제2023-울산남구-1093호</span><br /><span>울산광역시 북구 진장로 16</span></p>
+      <p>© 2026 CARIBE TRADING. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site-nav.js"></script>
+  <script src="auth.js"></script>
+  <script src="data/research-papers.js"></script>
+  <script src="data/literature-measurements.js"></script>
+  <script src="data/disc-patterns.js"></script>
+  <script src="research-qa.js"></script>
+  <script src="catalog-data.js"></script>
+  <script src="data.js"></script>
+  <script src="core.js"></script>
+  <script src="consult.js"></script>
+</body>
+</html>

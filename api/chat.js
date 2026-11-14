@@ -103,6 +103,8 @@ async function callGemini(model, key, contents) {
 }
 
 module.exports = async function handler(req, res) {
+  // GET: 설정 상태 점검용 (키 값이나 지침 내용은 내보내지 않음)
+  if (req.method === "GET") return send(res, 200, { ok: true, configured: !!process.env.GEMINI_API_KEY, knowledge: KNOWLEDGE.length > 0 });
   if (req.method !== "POST") return send(res, 405, { error: "method_not_allowed" });
 
   const origin = req.headers.origin || "";
@@ -136,12 +138,14 @@ module.exports = async function handler(req, res) {
 
   for (const model of MODELS) {
     try {
+      const started = Date.now();
       const { status, data } = await callGemini(model, key, contents);
       if (status === 404) continue; // 모델 이름이 바뀐 경우 다음 후보로
-      if (status === 429) return send(res, 429, { error: "quota" });
+      if (status === 429) { console.warn("gemini quota", model); return send(res, 429, { error: "quota" }); }
       if (status !== 200) { console.error("gemini", model, status, JSON.stringify(data).slice(0, 300)); return send(res, 502, { error: "upstream" }); }
       const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
-      if (!text) return send(res, 502, { error: "empty_reply" });
+      if (!text) { console.error("gemini", model, "empty reply", data.candidates?.[0]?.finishReason); return send(res, 502, { error: "empty_reply" }); }
+      console.log("gemini ok", model, Date.now() - started + "ms");
       return send(res, 200, { reply: text.slice(0, 2000), model });
     } catch (e) {
       console.error("gemini", model, e && e.message);

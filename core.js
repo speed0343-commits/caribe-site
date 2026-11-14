@@ -329,3 +329,42 @@ function ptTable(items, home) {
   }).join("");
   return `<div class="pt-wrap"><table class="pt"><thead><tr><th>위치</th><th>OEM 품번</th><th>외경 × 두께 (mm)</th><th>적용 차종</th><th class="r">COLUMN (원)</th><th class="r">BREMBO (원)</th><th class="r">2장 1세트</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
+
+// ---------------- 디자인 보기 (카오스 가공 타입 사진) ----------------
+// 상담창을 닫거나 다른 페이지로 옮기지 않고 지금 화면 위에 띄웁니다.
+// 내용은 technology.html 의 '카오스 가공 타입' 사진과 가공비 표를 그대로 가져와, 페이지와 늘 같게 보입니다.
+async function showDesignViewer() {
+  let box = document.getElementById("designViewer");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "designViewer";
+    box.className = "design-viewer";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-label", "카오스 가공 디자인");
+    box.innerHTML = `<div class="dv-head"><b>카오스 가공 디자인</b><button type="button" class="x" data-dv-close aria-label="디자인 닫기">×</button></div>
+      <div class="dv-body"><p class="muted small">불러오는 중…</p></div>
+      <div class="dv-foot"><button type="button" class="btn btn-ghost" data-dv-close>닫고 상담 계속하기</button><a href="technology.html#chaos-types" target="_blank" rel="noopener">카오스 가공 페이지 새 창으로 보기 ↗</a></div>`;
+    document.body.appendChild(box);
+    box.addEventListener("click", (e) => { if (e.target.closest("[data-dv-close]")) hideDesignViewer(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && box.classList.contains("open")) hideDesignViewer(); });
+    try {
+      const doc = new DOMParser().parseFromString(await (await fetch("technology.html")).text(), "text/html");
+      const types = doc.querySelector("#chaos-types .chaos-types");
+      const price = doc.querySelector("#chaos-price .pt-price");
+      if (!types) throw new Error("no section");
+      box.querySelector(".dv-body").innerHTML = types.outerHTML + (price ? `<div class="pt-wrap dv-price">${price.outerHTML}</div>` : "");
+    } catch (e) {
+      box.querySelector(".dv-body").innerHTML = "<p>디자인을 불러오지 못했습니다. 아래 '카오스 가공 페이지 새 창으로 보기'를 눌러 확인해 주십시오.</p>";
+    }
+  }
+  box.classList.add("open");
+  box.querySelector(".dv-body").scrollTop = 0;
+  box.querySelector(".x").focus();
+}
+function hideDesignViewer() {
+  const box = document.getElementById("designViewer");
+  if (!box || !box.classList.contains("open")) return;
+  box.classList.remove("open");
+  const t = document.getElementById("chatText") || document.getElementById("text"); // 상담 입력란으로 돌아감
+  if (t && t.offsetParent) t.focus();
+}

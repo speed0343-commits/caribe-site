@@ -23,7 +23,7 @@
   ],
   "functions": {
     "api/chat.js": {
-      "includeFiles": "docs/ai-knowledge.md",
+      "includeFiles": "docs/*.md",
       "maxDuration": 30
     }
   },

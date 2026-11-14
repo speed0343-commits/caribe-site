@@ -528,14 +528,24 @@ const LOCAL_FIRST = /(^\s*(안녕|하이|hi|hello|헬로|반갑)|감사|고마|�
 const RQ_CHIPS = [["외부 연구 결과 보기", "#rq:improve"], ["가공 상담 시작", "#consult"]];
 // 기존 답변(localHtml)을 준비해 두고 Gemini에게 먼저 묻습니다. Gemini가 실패하면 기존 답변을 보여 줍니다.
 const aiOr = (text, t, localHtml) => askGemini(text, t, { fallback: localHtml });
+// AI 답변을 기다리는 동안에는 전송을 막아 같은 질문이 두 번 가지 않게 합니다
+let aiWaiting = false;
+function aiBusy(on) {
+  aiWaiting = on;
+  $("#chatForm").classList.toggle("busy", on);
+  $("#chatForm button").disabled = on;
+  if (!on && $("#chat").classList.contains("open")) $("#chatText").focus();
+}
 const aiFormat = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^\s*[*-]\s+/gm, "· ");
 async function askGemini(text, t, opts = {}) {
   if (!opts.chips && /(카오스|chaos|가공)/.test(t)) opts.chips = RQ_CHIPS; // 가공 질문에는 외부 연구·가공 상담 버튼
   const wait = document.createElement("div");
   wait.className = "msg bot ai-wait";
-  wait.textContent = "답변을 준비하고 있어요…";
+  wait.setAttribute("role", "status");
+  wait.innerHTML = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>답변을 준비하고 있어요';
   chatLog.appendChild(wait);
   chatLog.scrollTop = chatLog.scrollHeight;
+  aiBusy(true);
   const car = [chatState.make && makeKo(chatState.make), chatState.group, chatState.code].filter(Boolean).join(" ");
   try {
     const r = await fetch("/api/chat", {
@@ -544,7 +554,7 @@ async function askGemini(text, t, opts = {}) {
       body: JSON.stringify({ message: text, history: aiHistory.slice(-6), car }),
     });
     const data = await r.json().catch(() => ({}));
-    wait.remove();
+    wait.remove(); aiBusy(false);
     if (!r.ok || !data.reply) {
       if (r.status === 429 && !opts.fallback) return say("지금 AI 상담 요청이 많아 잠시 답변하기 어려워요. 잠시 후 다시 물어보시거나 상담사와 채팅해 주십시오." + chips([["상담사와 채팅", "#agent"]]));
       return opts.fallback ? say(opts.fallback) : fallbackReply(text, t);
@@ -552,7 +562,7 @@ async function askGemini(text, t, opts = {}) {
     aiHistory.push({ role: "user", text }, { role: "model", text: data.reply });
     say(aiFormat(data.reply) + `<span class="ai-note">AI 답변이에요. 주문·적용 여부는 담당자가 최종 확인합니다.</span>` + chips([...(opts.chips || []), ["상담사와 채팅", "#agent"]]));
   } catch (e) {
-    wait.remove();
+    wait.remove(); aiBusy(false);
     opts.fallback ? say(opts.fallback) : fallbackReply(text, t);
   }
 }
@@ -586,6 +596,7 @@ $("#chatForm").onsubmit = (e) => {
   e.preventDefault();
   const v = $("#chatText").value.trim();
   if (!v) return;
+  if (aiWaiting && chatMode !== "agent") return;
   say(v, "me");
   $("#chatText").value = "";
   if (chatMode === "agent") return postToAgent(v);
@@ -602,7 +613,7 @@ chatLog.addEventListener("submit", (e) => {
 });
 chatLog.addEventListener("click", (e) => {
   const b = e.target.closest("[data-chat]");
-  if (!b) return;
+  if (!b || (aiWaiting && chatMode !== "agent")) return;
   const v = b.dataset.chat;
   if (v === "#ai") { chatMode = "ai"; setAgentHeader(false); say("AI 상담으로 돌아가기", "me"); return say("AI 상담으로 돌아왔어요. 상담사 답변이 오면 이 창에 함께 표시됩니다.\n디스크는 차대번호·품번·차종으로 찾아드릴게요."); }
   say(b.dataset.label || b.textContent, "me");

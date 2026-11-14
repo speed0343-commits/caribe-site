@@ -112,7 +112,8 @@
   // ---------- 모든 페이지 오른쪽 아래 "AI 상담" 버튼 ----------
   // 메인(부품 검색)은 자체 상담창이 있고, 다른 페이지에서는 메인으로 가면서 상담창을 바로 엽니다.
   function setupChatFab() {
-    if (document.getElementById("chatFab") || !document.querySelector(".footer")) return;
+    // 가공 상담 페이지는 화면 자체가 AI 상담이라 버튼이 필요 없고, 휴대폰에서 전송 버튼을 가립니다.
+    if (document.getElementById("chatFab") || document.querySelector(".consult-chat") || !document.querySelector(".footer")) return;
     const a = document.createElement("a");
     a.className = "chat-fab";
     a.href = "index.html?chat=1";

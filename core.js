@@ -60,8 +60,8 @@ const YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY";
 function decodeVin(raw) {
   const vin = raw.trim().toUpperCase().replace(/[\s-]/g, "");
   if (vin.length !== 17) return { ok: false, error: `차대번호는 17자리입니다. (입력: ${vin.length}자리)` };
-  if (/[IOQ]/.test(vin)) return { ok: false, error: "차대번호에는 I, O, Q 문자가 쓰이지 않습니다. 숫자 1, 0과 혼동했는지 확인해 주십시오." };
-  if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) return { ok: false, error: "영문 대문자와 숫자만 입력할 수 있습니다." };
+  if (/[IOQ]/.test(vin)) return { ok: false, error: "차대번호에는 I, O, Q 문자가 쓰이지 않습니다. 숫자 1, 0과 혼동하지 않으셨는지 확인해 주세요." };
+  if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) return { ok: false, error: "차대번호는 영문과 숫자로만 입력해 주세요." };
   return { ok: true, vin, make: WMI_MAP[vin.slice(0, 3)] || null };
 }
 
@@ -127,7 +127,7 @@ function printNotice() {
   const n = document.createElement("div");
   n.className = "print-notice";
   n.setAttribute("role", "status");
-  n.textContent = "이 화면에서는 인쇄 창을 열 수 없습니다. 의뢰서 내용은 화면에서 확인해 주십시오.";
+  n.textContent = "이 화면에서는 인쇄 창을 열 수 없습니다. 의뢰서 내용은 화면에서 확인해 주세요.";
   document.body.appendChild(n);
   setTimeout(() => n.remove(), 4000);
 }
@@ -290,7 +290,7 @@ const CART_KEY = "cart4";
 const ORDERS_KEY = "carib_orders";
 const ORDER_STATUS = ["주문 접수", "적용 확인", "입금 확인", "출고 준비", "배송 중", "배송 완료", "취소 요청", "취소"];
 const PAY_METHODS = {
-  bank: { name: "무통장 입금", ready: true, note: "차량 적용 확인 후 입금 계좌를 문자로 안내합니다." },
+  bank: { name: "무통장 입금", ready: true, note: "차량 적용 확인 후 입금 계좌를 문자로 안내해 드립니다." },
   card: { name: "신용·체크카드", ready: false, note: "결제대행(PG) 연동 후 제공 예정" },
   easy: { name: "간편결제 (네이버페이·카카오페이)", ready: false, note: "결제대행(PG) 연동 후 제공 예정" },
 };

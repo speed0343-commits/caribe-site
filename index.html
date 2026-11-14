@@ -31,7 +31,7 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <h1>내 차에 맞는 디스크,<br />검색 한 번으로</h1>
-        <p class="lead">차대번호나 OEM 품번을 넣으면 맞는 브레이크 디스크와 가격이 바로 나옵니다.</p>
+        <p class="lead">차대번호나 OEM 품번을 입력하시면 맞는 브레이크 디스크와 가격을 바로 확인하실 수 있습니다.</p>
 
         <form class="search-box" id="vinForm" autocomplete="off" role="search">
           <input id="vinInput" maxlength="24" placeholder="차대번호 17자리 또는 OEM 품번" data-ph-short="차대번호 또는 OEM 품번" aria-label="차대번호 또는 OEM 품번" />
@@ -88,27 +88,27 @@
           </select>
         </label>
       </div>
-      <p class="notice">같은 차종도 사양에 따라 디스크가 다르므로 주문 시 차대번호를 함께 받습니다.</p>
+      <p class="notice">같은 차종이라도 사양에 따라 디스크가 다를 수 있어, 주문하실 때 차대번호를 함께 받고 있습니다.</p>
       <div id="results" class="grid"></div>
       <div class="find-help" role="note">
         <div>
-          <b>찾는 제품이 목록에 없을 때</b>
-          <span>차대번호와 필요 품목을 남기면 조달 가능 여부를 확인해 답합니다.</span>
+          <b>찾는 제품이 없으신가요?</b>
+          <span>차대번호와 필요한 품목을 남겨 주시면 구매 가능 여부를 확인해 연락드립니다.</span>
         </div>
-        <button type="button" class="btn btn-primary" data-find-help>문의 남기기</button>
+        <button type="button" class="btn btn-primary" data-find-help>문의하기</button>
       </div>
     </section>
 
     <section id="list" class="panel">
       <div class="pt-head"><h2>등록 디스크</h2><a href="products.html" id="homeTableAll">전체 보기</a></div>
       <div id="homeTable"></div>
-      <p class="pt-note">가격은 2장 1세트, VAT 포함. 같은 차종도 사양에 따라 디스크가 다르므로 주문 시 차대번호를 함께 받습니다.</p>
+      <p class="pt-note">가격은 2장 1세트, VAT 포함입니다. 같은 차종이라도 사양에 따라 디스크가 다를 수 있어, 주문하실 때 차대번호를 함께 받고 있습니다.</p>
     </section>
 
     <section id="chaos" class="cb-chaos">
       <div class="cb-chaos-copy">
         <h2>휠 사이로 보이는<br />디스크가 달라집니다</h2>
-        <p>마찰면에 홈 패턴을 새기는 카오스 가공. 사선, A, B 세 가지 타입 가운데 휠에 어울리는 것으로 고릅니다.</p>
+        <p>마찰면에 홈 패턴을 새기는 카오스 가공입니다. 사선, A, B 세 가지 타입 중 휠에 어울리는 디자인을 고르실 수 있습니다.</p>
         <div class="cb-pills"><span>사선 66,000원부터</span><span>A 타입 88,000원부터</span><span>B 타입 110,000원부터</span></div>
         <div class="actions">
           <a class="btn btn-primary" href="technology.html#chaos-types">카오스 가공 보기</a>
@@ -127,12 +127,12 @@
     <div class="cb-ai-inner">
       <div class="cb-ai-copy">
         <h2>모르는 건<br />AI 상담을 통해 문의해보세요</h2>
-        <p>차종만 알아도 디스크를 찾고, 상담창 안에서 바로 담고 견적서까지 받을 수 있습니다.</p>
+        <p>차종만 알려 주셔도 디스크를 찾아 드립니다. 상담창에서 바로 담고 견적서까지 받으실 수 있습니다.</p>
         <button type="button" class="btn btn-light" id="openChatHero">AI 상담 열기</button>
       </div>
       <div class="cb-ai-demo">
         <div class="cb-b me">W213 앞 디스크 있어요?</div>
-        <div class="cb-b bot">벤츠 W213 앞 디스크 6종이 등록되어 있습니다. 브랜드와 카오스 가공을 고르고 바로 담을 수 있습니다.</div>
+        <div class="cb-b bot">벤츠 W213 앞 디스크 6종이 등록되어 있습니다. 브랜드와 카오스 가공을 선택하시고 바로 담으실 수 있습니다.</div>
         <div class="cb-ask">
           <button type="button" data-ask="카오스 가공비 얼마예요?">카오스 가공비</button>
           <button type="button" data-ask="배송 얼마나 걸려요?">배송 기간</button>
@@ -147,16 +147,16 @@
     <section id="inquiry" class="panel cb-contact">
       <div class="cb-contact-form">
         <h2>문의</h2>
-        <p class="section-sub">궁금한 점을 남기면 영업시간 안에 연락드립니다.</p>
+        <p class="section-sub">궁금한 점을 남겨 주시면 영업시간 내에 연락드리겠습니다.</p>
         <form id="inquiryForm" class="inquiry-form">
           <label>이름 또는 업체명 <input name="name" required /></label>
           <label>연락처 <input name="phone" required placeholder="010-0000-0000" /></label>
-          <label class="full">차대번호 <input name="vin" maxlength="17" placeholder="17자리 (모르면 비워 둡니다)" /></label>
+          <label class="full">차대번호 <input name="vin" maxlength="17" placeholder="17자리 (모르시면 비워 두셔도 됩니다)" /></label>
           <label class="full">문의 내용 <textarea name="message" rows="5" required placeholder="차종, 필요한 품목, 궁금한 점"></textarea></label>
-          <label class="full check"><input type="checkbox" required /> 문의 답변을 위해 이름, 연락처, 차대번호를 받는 데 동의합니다.</label>
-          <button type="submit" class="full">문의 보내기</button>
+          <label class="full check"><input type="checkbox" required /> 문의 답변을 위한 이름, 연락처, 차대번호 수집에 동의합니다.</label>
+          <button type="submit" class="full">문의하기</button>
         </form>
-        <p id="inquiryDone" class="ok" hidden>문의를 보냈습니다. 확인하는 대로 연락드리겠습니다.</p>
+        <p id="inquiryDone" class="ok" hidden>문의가 접수되었습니다. 확인 후 연락드리겠습니다.</p>
       </div>
       <aside class="cb-contact-side">
         <h3>바로 연락</h3>
@@ -166,7 +166,7 @@
           <div><dt>이메일</dt><dd><a href="mailto:caribetrading@naver.com">caribetrading@naver.com</a></dd></div>
           <div><dt>주소</dt><dd>울산광역시 북구 진장로 16</dd></div>
         </dl>
-        <p>영업시간이 아닐 때 남긴 문의는 다음 영업일에 순서대로 답합니다.</p>
+        <p>영업시간 외에 남겨 주신 문의는 다음 영업일에 순서대로 답변드립니다.</p>
       </aside>
     </section>
   </main>
@@ -190,7 +190,7 @@
         <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
         <span>월~토 09:00 ~ 18:00</span>
         <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
-        <a class="footer-btn" href="index.html#inquiry">문의 남기기</a>
+        <a class="footer-btn" href="index.html#inquiry">문의하기</a>
       </div>
     </div>
     <div class="wrap footer-legal">
@@ -206,8 +206,8 @@
     <div class="drawer-foot">
       <div class="total">합계 <b id="cartTotal">0원</b></div>
       <button id="cartCheckout">주문하기</button>
-      <button id="cartOrder" class="btn btn-ghost cart-ask">주문 전에 맞는지 물어보기</button>
-      <p class="muted small">주문을 받으면 차량에 맞는지 확인한 뒤 결제 방법을 안내해 드립니다.</p>
+      <button id="cartOrder" class="btn btn-ghost cart-ask">주문 전에 맞는지 문의하기</button>
+      <p class="muted small">주문이 접수되면 차량에 맞는지 확인한 뒤 결제 방법을 안내해 드립니다.</p>
     </div>
   </aside>
 
@@ -215,7 +215,7 @@
   <button class="chat-fab" id="chatFab">AI 상담</button>
   <aside class="chat" id="chat" aria-hidden="true">
     <div class="chat-head">
-      <div><b>AI 상담</b><span class="muted small">부품 찾기부터 궁금한 점까지 답변합니다</span></div>
+      <div><b>AI 상담</b><span class="muted small">부품 찾기부터 궁금한 점까지 답변해 드립니다</span></div>
       <button class="x" data-close="chat">×</button>
     </div>
     <div class="chat-log" id="chatLog"></div>

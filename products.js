@@ -67,7 +67,7 @@
     result.textContent = `${items.length}종`;
     grid.className = "pt-host";
     grid.innerHTML = items.length ? ptTable(items, false)
-      : `<div class="empty">조건에 맞는 디스크가 없습니다. 검색어를 바꾸거나 <a href="index.html#inquiry">문의</a>를 남겨 주십시오.</div>`;
+      : `<div class="empty">조건에 맞는 디스크가 없습니다. 검색어를 바꿔 보시거나 <a href="index.html#inquiry">문의</a>를 남겨 주세요.</div>`;
   }
 
   [makeSel, axleSel, sortSel].forEach((el) => el.addEventListener("change", render));

@@ -77,7 +77,7 @@ function renderResults() {
   else if (makeSel.value) items = groupByProduct(rowsFor({ make: makeSel.value, group: groupSel.value, code: modelSel.value }), axleSel.value);
   else { box.innerHTML = ""; return; }
   box.innerHTML = items.length ? items.map((it) => productCard(it, highlight)).join("")
-    : '<div class="empty">등록된 디스크가 없습니다. 아래 문의창에 남겨 주시면 해외 조달 가능 여부를 확인해 드립니다.<br /><button type="button" class="btn btn-primary" data-find-help style="margin-top:12px">문의 남기기</button></div>';
+    : '<div class="empty">등록된 디스크가 없습니다. 아래 문의창에 남겨 주시면 해외 조달 가능 여부를 확인해 연락드리겠습니다.<br /><button type="button" class="btn btn-primary" data-find-help style="margin-top:12px">문의하기</button></div>';
 }
 
 // "찾으시는 제품이 없나요?" → 지금 검색한 내용을 담아 아래 문의창으로
@@ -90,7 +90,7 @@ function searchContextText() {
 document.addEventListener("click", (e) => {
   const b = e.target.closest && e.target.closest("[data-find-help]"); if (!b) return;
   const ctxText = searchContextText();
-  prefillInquiry(`[제품 문의] 찾는 브레이크 디스크가 검색되지 않습니다.\n${ctxText ? ctxText + "\n" : ""}연식·엔진, 기존 디스크 품번이나 외경을 알면 함께 적어 주십시오.`);
+  prefillInquiry(`[제품 문의] 찾는 브레이크 디스크가 검색되지 않습니다.\n${ctxText ? ctxText + "\n" : ""}연식·엔진, 기존 디스크 품번이나 외경을 아시면 함께 적어 주세요.`);
   setTimeout(() => $("#inquiryForm").name.focus({ preventScroll: true }), 400);
 });
 
@@ -105,20 +105,20 @@ function showSearch(input) {
     makeSel.value = ""; fillGroups(""); renderResults(); return;
   }
   const r = decodeVin(q);
-  if (!r.ok) { ctx = null; box.className = "vin-result err"; box.innerHTML = esc(norm(q).length === 17 ? r.error : `등록된 품번이 아니거나 차대번호 형식이 아닙니다. ${r.error}`); renderResults(); return; }
+  if (!r.ok) { ctx = null; box.className = "vin-result err"; box.innerHTML = esc(norm(q).length === 17 ? r.error : `등록된 품번이 아니거나 차대번호 형식이 올바르지 않습니다. ${r.error}`); renderResults(); return; }
   sessionStorage.setItem("lastVin", r.vin);
   $("#inquiryForm").vin.value = r.vin;
   const m = matchVin(r);
-  let html = `<b>차대번호 ${esc(r.vin)}</b><dl><dt>제조사</dt><dd>${r.make ? esc(makeKo(r.make)) : "자동 식별 불가 — 직접 선택해 주십시오"}</dd>`;
+  let html = `<b>차대번호 ${esc(r.vin)}</b><dl><dt>제조사</dt><dd>${r.make ? esc(makeKo(r.make)) : "자동 식별 불가 — 아래에서 직접 선택해 주세요"}</dd>`;
   if (m.level === "exact") {
     const bodies = [...new Set(m.rows.map((x) => `${x.body} ${x.engine}`))];
     html += `<dt>모델코드</dt><dd>${esc(m.key)} <span class="match">· 등록 데이터와 일치</span></dd><dt>차량</dt><dd>${esc(bodies.slice(0, 3).join(" / "))}</dd></dl>`;
     ctx = { rows: m.rows, highlight: `모델코드 ${m.key} 적용 확인` };
   } else if (m.level === "platform") {
-    html += `<dt>플랫폼 코드</dt><dd>${esc(m.key)} (추정)</dd></dl><p class="muted small" style="margin:8px 0 0">같은 플랫폼에도 엔진·브레이크 사양별로 디스크가 다릅니다. 아래 외경을 기존 디스크와 비교하시거나 담당자 확인을 요청해 주십시오.</p>`;
+    html += `<dt>플랫폼 코드</dt><dd>${esc(m.key)} (추정)</dd></dl><p class="muted small" style="margin:8px 0 0">같은 플랫폼이라도 엔진·브레이크 사양에 따라 디스크가 다를 수 있습니다. 아래 외경을 기존 디스크와 비교해 보시거나 담당자 확인을 요청해 주세요.</p>`;
     ctx = { rows: m.rows, highlight: `플랫폼 ${m.key} 기준 후보` };
   } else {
-    html += `</dl><p class="muted small" style="margin:8px 0 0">${m.key ? `이 차량(코드 ${esc(m.key)})에 맞는 디스크는 아직 등록 전입니다. ` : ""}${r.make ? "아래에서 모델·세대를 골라 주십시오." : ""} 담당자 확인도 가능합니다.</p>`;
+    html += `</dl><p class="muted small" style="margin:8px 0 0">${m.key ? `이 차량(코드 ${esc(m.key)})에 맞는 디스크는 아직 등록되지 않았습니다. ` : ""}${r.make ? "아래에서 모델·세대를 선택해 주세요." : ""} 담당자 확인도 요청하실 수 있습니다.</p>`;
     ctx = null;
   }
   box.innerHTML = html;
@@ -160,9 +160,9 @@ function renderCart() {
     total += unit * q; if (o && !o.price) quote = true;
     return `<div class="cart-row"><div>디스크 ${axleKo(p.axle)} · <b>${esc(brand)}</b> · OEM ${esc(p.pn)}${o ? `<br><small class="chaos-line">+ ${esc(optLabel(o))}</small>` : ""}<div class="muted small">${won(unit)} / 세트(2장)</div></div>
       <div class="qty"><button data-dec="${esc(k)}">−</button>${q}<button data-inc="${esc(k)}">+</button></div></div>`;
-  }).join("") + (chaosLines.length ? `<div class="cart-chaos"><b>카오스 가공 ${chaosLines.length}건</b><span>가공 상담에서 사용 환경·요청 사항을 남기면 의뢰서가 만들어져 더 빠르게 검토됩니다.</span>
+  }).join("") + (chaosLines.length ? `<div class="cart-chaos"><b>카오스 가공 ${chaosLines.length}건</b><span>가공 상담에서 사용 환경·요청 사항을 남겨 주시면 의뢰서가 작성되어 더 빠르게 검토해 드립니다.</span>
       <a class="btn btn-primary" href="consult.html?pn=${encodeURIComponent(chaosLines[0].p.pn)}&sets=${chaosLines[0].q}&type=${encodeURIComponent(chaosLines[0].o.code)}&brand=${encodeURIComponent(chaosLines[0].brand)}">가공 의뢰서 작성</a></div>` : "")
-    : '<p class="muted">담은 상품이 없습니다.</p>';
+    : '<p class="muted">장바구니에 담긴 상품이 없습니다.</p>';
   $("#cartTotal").textContent = won(total) + (quote ? " + 가공비 별도" : "") + (PRICE_NOTE ? ` (${PRICE_NOTE})` : "");
 }
 

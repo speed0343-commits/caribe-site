@@ -123,7 +123,7 @@
         const w = window.open(href, "_blank");
         if (w) return;
       }
-      copy(shown).then((ok) => toast(isTel ? (ok ? `전화번호를 복사했습니다: ${shown}` : `전화 문의: ${shown}`) : (ok ? `이메일 주소를 복사했습니다: ${shown}` : `이메일: ${shown}`)));
+      copy(shown).then((ok) => toast(isTel ? (ok ? `전화번호가 복사되었습니다: ${shown}` : `전화 문의: ${shown}`) : (ok ? `이메일 주소가 복사되었습니다: ${shown}` : `이메일: ${shown}`)));
     });
   }
   // ---------- 모든 페이지 오른쪽 아래 "AI 상담" 버튼 ----------

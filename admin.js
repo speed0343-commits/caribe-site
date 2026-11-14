@@ -27,9 +27,10 @@ function renderStats() {
   const waitingChats = ch.filter((c) => c.status !== "종료" && unreadOf(c) > 0).length;
   const newOrders = od.filter((o) => ["주문 접수", "적용 확인", "취소 요청"].includes(o.status)).length;
   const openInq = q.filter((x) => ["접수", "검토 중", "견적 안내"].includes(x.status)).length; // 작업 완료·취소는 빼고 셈
+  // 숫자 칸을 누르면 그 탭의 처리 대기 항목만 보여 줌
   $("#stats").innerHTML = [
-    [newOrders, "처리 대기 주문 (접수·적용 확인·취소 요청)"], [open, "가공 의뢰 처리 대기"], [waitingChats, "답변 대기 상담사 채팅"], [openInq, "일반 문의 처리 대기"],
-  ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join("");
+    [newOrders, "처리 대기 주문 (접수·적용 확인·취소 요청)", "ord"], [open, "가공 의뢰 처리 대기", "req"], [waitingChats, "답변 대기 상담사 채팅", "chat"], [openInq, "일반 문의 처리 대기", "inq"],
+  ].map(([n, l, t]) => `<button type="button" data-goto="${t}" title="${l} 목록 보기"><b>${n}</b><span>${l}</span></button>`).join("");
   const unreadTotal = ch.reduce((s, c) => s + unreadOf(c), 0);
   const b = $("#chatBadge"); b.hidden = !unreadTotal; b.textContent = unreadTotal;
   const aiOpen = aiGroups().filter((g) => g.status === "미처리").length;
@@ -117,13 +118,13 @@ function matches(obj, q) { return !q || JSON.stringify(obj).toLowerCase().includ
 function renderTable() {
   const q = $("#q").value.trim(), st = $("#statusFilter").value;
   if (tab === "req") {
-    const list = getReqs().filter((r) => matches({ ...r, log: undefined }, q) && (!st || r.status === st));
+    const list = getReqs().filter((r) => matches({ ...r, log: undefined }, q) && stOk(r, st));
     $("#table").innerHTML = `<thead><tr><th>의뢰번호</th><th>접수일</th><th>고객</th><th>연락처</th><th>차량</th><th>디스크</th><th>수량</th><th>상태</th></tr></thead><tbody>` +
       (list.length ? list.map((r) => `<tr data-id="${esc(r.id)}"><td><b>${esc(r.id)}</b></td><td>${esc(r.date)}</td><td>${esc(r.contact?.name)}</td><td>${esc(r.contact?.phone)}</td>
         <td>${esc([r.vehicle?.make, r.vehicle?.model].filter(Boolean).join(" ") || r.vehicle?.vin || "-")}${r.memberId ? ' <span class="tag">회원</span>' : ""}</td><td>${esc(r.disc?.pn || "-")} ${esc(r.disc?.axle || "")}</td><td>${esc(r.disc?.qty || "-")}</td><td>${badge(r.status)}</td></tr>`).join("")
         : `<tr><td colspan="8" class="muted" style="text-align:center;padding:28px">가공 의뢰가 없습니다. <a href="consult.html">가공 상담</a>에서 의뢰서를 만들어 보십시오.</td></tr>`) + "</tbody>";
   } else if (tab === "ord") {
-    const list = getOrders().filter((o) => matches(o, q) && (!st || o.status === st));
+    const list = getOrders().filter((o) => matches(o, q) && stOk(o, st));
     $("#table").innerHTML = `<thead><tr><th>주문번호</th><th>주문 시각</th><th>주문자</th><th>연락처</th><th>상품</th><th>금액</th><th>결제</th><th>상태</th></tr></thead><tbody>` +
       (list.length ? list.map((o) => `<tr data-ord="${esc(o.id)}"><td><b>${esc(o.id)}</b>${o.memberId ? ' <span class="tag">회원</span>' : ""}</td><td>${esc(fmtDT(o.createdAt))}</td><td>${esc(o.orderer.name)}</td><td>${esc(o.orderer.phone)}</td>
         <td>${esc(o.items[0] ? o.items[0].pn : "-")}${o.items.length > 1 ? ` 외 ${o.items.length - 1}` : ""}</td><td>${won(o.amounts.total)}${o.amounts.chaosQuote ? "+α" : ""}</td><td>${esc(o.payment.name)} · ${o.payment.paid ? "완료" : "미결제"}</td><td>${orderBadge(o.status)}</td></tr>`).join("")
@@ -144,7 +145,7 @@ function renderTable() {
         : `<tr><td colspan="5" class="muted" style="text-align:center;padding:28px">AI가 답하지 못한 질문이 없습니다. 고객이 AI 상담에서 처음 보는 질문을 하면 여기에 쌓입니다.</td></tr>`) + "</tbody>";
     if (!$("#detail").innerHTML.trim()) $("#detail").innerHTML = aiAnswersPanel(store.get(AI_ANSWERS_KEY, []));
   } else if (tab === "chat") {
-    const list = agentChats().filter((c) => matches(c, q) && (!st || c.status === st));
+    const list = agentChats().filter((c) => matches(c, q) && stOk(c, st));
     $("#table").innerHTML = `<thead><tr><th>채팅번호</th><th>시작</th><th>고객</th><th>연락처</th><th>첫 문의</th><th>마지막 메시지</th><th>새 메시지</th><th>상태</th></tr></thead><tbody>` +
       (list.length ? list.map((c) => { const last = [...c.messages].reverse().find((m) => m.who !== "system"); const u = unreadOf(c);
         return `<tr data-chat="${esc(c.id)}"><td><b>${esc(c.id)}</b></td><td>${esc(fmtDT(c.createdAt))}</td><td>${esc(c.contact?.name || "-")}</td><td>${esc(c.contact?.phone || "-")}</td>
@@ -152,7 +153,7 @@ function renderTable() {
           <td>${u ? `<span class="unread">${u}</span>` : "-"}</td><td>${chatBadge(c.status)}</td></tr>`; }).join("")
         : `<tr><td colspan="8" class="muted" style="text-align:center;padding:28px">상담사 채팅이 없습니다. 메인 페이지 AI 상담에서 "디스크 외 부품 문의"로 시작해 보십시오.</td></tr>`) + "</tbody>";
   } else {
-    const list = getInqs().filter((r) => matches(r, q) && (!st || r.status === st)).reverse();
+    const list = getInqs().filter((r) => matches(r, q) && stOk(r, st)).reverse();
     $("#table").innerHTML = `<thead><tr><th>접수 시각</th><th>고객</th><th>연락처</th><th>차대번호</th><th>내용</th><th>상태</th></tr></thead><tbody>` +
       (list.length ? list.map((r) => `<tr data-inq="${r.idx}"><td>${esc(fmtDT(r.at))}</td><td>${esc(r.name)}</td><td>${esc(r.phone)}</td><td>${esc(r.vin || "-")}</td>
         <td style="white-space:normal;max-width:360px">${esc((r.message || "").slice(0, 60))}${(r.message || "").length > 60 ? "…" : ""}</td><td>${badge(r.status)}</td></tr>`).join("")
@@ -278,10 +279,22 @@ window.addEventListener("storage", (e) => { if (e.key === AGENT_KEY) refreshChat
 
 function renderAll() { renderStats(); renderTable(); }
 
+// 상태 필터 "처리 대기만" (__open): 위쪽 숫자 칸과 같은 기준
+const OPEN_ST = { req: ["접수", "검토 중"], ord: ["주문 접수", "적용 확인", "취소 요청"], inq: ["접수", "검토 중", "견적 안내"] };
+const isOpen = (x) => (tab === "chat" ? x.status !== "종료" && unreadOf(x) > 0 : (OPEN_ST[tab] || []).includes(x.status));
+const stOk = (x, st) => !st || (st === "__open" ? isOpen(x) : x.status === st);
+$("#stats").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-goto]"); if (!b) return;
+  document.querySelector(`[data-tab="${b.dataset.goto}"]`).click();
+  $("#q").value = ""; $("#statusFilter").value = "__open"; renderTable();
+  $("#listPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
 document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => {
   tab = b.dataset.tab;
   document.querySelectorAll("[data-tab]").forEach((x) => x.classList.toggle("on", x === b));
   const sf = $("#statusFilter"); sf.innerHTML = '<option value="">전체 상태</option>';
+  if (OPEN_ST[tab] || tab === "chat") sf.add(new Option(tab === "chat" ? "답변 대기만" : "처리 대기만", "__open"));
   (tab === "chat" ? CHAT_STATUS : tab === "ord" ? ORDER_STATUS : tab === "ai" ? AI_Q_STATUS : REQ_STATUS).forEach((s) => sf.add(new Option(s, s)));
   sf.hidden = tab === "mem";
   $("#q").placeholder = tab === "mem" ? "이름·업체명·이메일·휴대폰 검색" : tab === "ai" ? "질문 내용 검색" : "의뢰번호·고객·연락처·차대번호 검색";

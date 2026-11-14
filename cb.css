@@ -457,3 +457,15 @@
 .sys-status.warn span:first-child { color: #c8102e; font-weight: 700; }
 .contact-toast.show { opacity: 1; transform: translate(-50%, 0); }
 #adminToast.err { background: #c8102e; }
+/* 관리자: 떠 있는 상단 배너 아래부터 내용 시작, 숫자 칸은 눌러서 목록으로 이동 */
+/* .cb main.wrap { padding-top: 0 } 보다 우선하도록 선택자를 더 구체적으로 */
+.cb main.wrap.admin-main { padding-top: 136px; }
+@media (max-width: 720px) { .cb main.wrap.admin-main { padding-top: 104px; } }
+.cb #listPanel { scroll-margin-top: 120px; }
+.stat-row > button { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: #fff; border: 1px solid #d3ddd8; border-radius: 4px; padding: 14px 16px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.stat-row > button:hover, .stat-row > button:focus-visible { border-color: #0b6e4f; box-shadow: 0 0 0 3px rgba(11, 110, 79, .12); outline: none; }
+.stat-row > button span::after { content: " ›"; color: #0b6e4f; font-weight: 700; }
+.cb .sys-status { margin: -4px 0 16px; padding: 10px 14px; background: #fff; border: 1px solid #d3ddd8; border-radius: 4px; justify-content: space-between; gap: 10px; }
+.cb .sys-status .sys-items { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.cb .sys-status .sys-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.cb .sys-status .btn { padding: 6px 14px; font-size: 13px; min-height: 0; }

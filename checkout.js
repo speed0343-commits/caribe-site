@@ -96,11 +96,17 @@
   $("#findAddr").addEventListener("click", () => {
     help.hidden = true;
     if (window.daum && window.daum.Postcode) return openPostcode();
-    const s = document.createElement("script");
-    s.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-    s.onload = () => (window.daum && window.daum.Postcode ? openPostcode() : fail());
-    s.onerror = fail;
-    document.head.appendChild(s);
+    // 카카오 우편번호 서비스: t1.daumcdn.net 은 2026-11-30 종료 → t1.kakaocdn.net 사용.
+    // 새 주소가 안 열리면 예전 주소로 한 번 더 시도 (예전 주소가 끝나기 전까지 대비)
+    const SRC = ["https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js", "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"];
+    const load = (i) => {
+      const s = document.createElement("script");
+      s.src = SRC[i];
+      s.onload = () => (window.daum && window.daum.Postcode ? openPostcode() : i + 1 < SRC.length ? load(i + 1) : fail());
+      s.onerror = () => (i + 1 < SRC.length ? load(i + 1) : fail());
+      document.head.appendChild(s);
+    };
+    load(0);
     function fail() { help.textContent = "주소 검색을 불러오지 못했습니다. 우편번호와 주소를 직접 입력해 주십시오."; help.hidden = false; form.zip.focus(); }
   });
 

@@ -35,6 +35,8 @@ python3 -m http.server 3000
 | `about.html` | 회사 소개 |
 | `login.html`, `signup.html`, `mypage.html` | 회원 |
 | `checkout.html` | 주문 |
+| `catalog.html`, `catalog.css`, `catalog.js` | A4 카탈로그 (상품 데이터로 자동 구성, 인쇄·PDF용) |
+| `caribe-catalog.pdf` | 카탈로그 PDF — `npm start` 후 `node tools/build-catalog-pdf.js` 로 다시 만듦 (Playwright 필요) |
 | `admin.html` | 관리자 |
 | `styles.css`, `cb.css` | 스타일 |
 | `catalog-data.js`, `data.js`, `data/` | 상품·차종 데이터 |

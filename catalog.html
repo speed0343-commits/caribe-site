@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>카리브무역 | 브레이크 디스크 카탈로그</title>
+  <meta name="description" content="카리브무역 수입차 브레이크 디스크 · 카오스 가공 카탈로그 (A4 인쇄·PDF용)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap" />
+  <link rel="stylesheet" href="catalog.css" />
+</head>
+<body>
+  <!-- 화면에서만 보이는 도구 막대 (인쇄·PDF에는 안 나옴) -->
+  <div class="cat-bar">
+    <a href="index.html" class="cat-bar-home">← 홈페이지</a>
+    <span class="cat-bar-info" id="catInfo">카탈로그를 만드는 중…</span>
+    <a class="cat-bar-btn ghost" href="caribe-catalog.pdf" download>PDF 내려받기</a>
+    <button type="button" class="cat-bar-btn" onclick="window.print()">인쇄 / PDF로 저장</button>
+  </div>
+
+  <main id="book" class="book" aria-label="카리브무역 카탈로그"></main>
+
+  <!-- 상품·차종 데이터는 홈페이지와 같은 파일을 씁니다 → 상품이 바뀌면 카탈로그도 같이 바뀝니다 -->
+  <script src="catalog-data.js"></script>
+  <script src="data.js"></script>
+  <script src="core.js"></script>
+  <script src="catalog.js"></script>
+</body>
+</html>

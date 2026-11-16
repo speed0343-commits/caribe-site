@@ -6,6 +6,7 @@
 // POST {action:"update", kind, id, data} → 상태·메모 등 수정 (채팅은 메시지를 합쳐서 저장)
 // POST {action:"create"|"delete", kind:"answer"…} → AI 답변 등록·삭제
 // POST {action:"test-notify"}            → 알림 시험 발송
+// POST {action:"member-temp-password", id} → 회원 임시 비밀번호 발급 (전화로 본인 확인 후 안내)
 // ============================================================
 "use strict";
 const { send, readBody, clientIp, originOk, cookies, query } = require("../lib/http");
@@ -14,7 +15,8 @@ const auth = require("../lib/auth");
 const { notify, adminLink, status: notifyStatus } = require("../lib/notify");
 
 const ID_RE = /^[A-Za-z]{1,3}-[A-Za-z0-9-]{3,40}$/;
-const strip = (r) => { const o = {}; for (const [k, v] of Object.entries(r)) if (k !== "_key" && k !== "_token") o[k] = v; return o; };
+// 밑줄(_)로 시작하는 값(조회 열쇠, 회원 비밀번호 변환값 등)은 관리자 화면에도 보내지 않음
+const strip = (r) => { const o = {}; for (const [k, v] of Object.entries(r)) if (!k.startsWith("_")) o[k] = v; return o; };
 const msgKey = (m) => `${m.who}|${m.at}|${m.text}`;
 
 module.exports = async function handler(req, res) {
@@ -38,10 +40,20 @@ module.exports = async function handler(req, res) {
   if (!db.configured()) return send(res, 503, { error: "not_configured" });
 
   try {
+    if (action === "member-temp-password") {
+      const M = require("../lib/members");
+      const m = await db.get("member", String(body.id || ""));
+      if (!m || !m._pw) return send(res, 404, { error: "not_found" });
+      const temp = M.tempPassword();
+      m._pw = await M.hashPw(temp); m._sv = (m._sv || 0) + 1; m.mustChangePw = true; m.tempPwAt = new Date().toISOString();
+      await db.save("member", m);
+      return send(res, 200, { ok: true, password: temp, data: strip(m) });
+    }
+
     if (action === "list") {
       const kinds = String(query(req).get("kinds") || "").split(",").filter((k) => db.KINDS.includes(k));
       const data = {};
-      for (const k of kinds) data[k] = (await db.list(k, 500)).map(strip);
+      for (const k of kinds) data[k] = (await db.list(k, 500)).map((r) => (k === "member" ? { ...strip(r), account: !!r._pw } : strip(r)));
       return send(res, 200, { data });
     }
 

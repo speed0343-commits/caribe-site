@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>아이디·비밀번호 찾기 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+</head>
+<body data-page="find">
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /></a>
+      <nav>
+        <a href="index.html#top">부품 검색</a>
+        <a href="products.html">전체 상품</a>
+        <a href="technology.html">카오스 가공</a>
+        <a href="consult.html" class="keep">가공 상담</a>
+        <a href="about.html">회사 소개</a>
+        <a href="index.html#inquiry">문의</a>
+        <a class="nav-auth keep nav-login" href="login.html">로그인</a>
+        <a class="cart-btn" href="index.html?cart=1" aria-label="장바구니">장바구니 <b class="cart-count">0</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-band">
+    <div class="wrap">
+      <h1>아이디·비밀번호 찾기</h1>
+    </div>
+  </section>
+
+  <main class="wrap auth-main">
+    <div class="auth-card find-card">
+      <div class="find-tabs" role="tablist">
+        <button type="button" role="tab" id="tabId" aria-controls="paneId" aria-selected="true">아이디 찾기</button>
+        <button type="button" role="tab" id="tabPw" aria-controls="panePw" aria-selected="false">비밀번호 찾기</button>
+      </div>
+
+      <!-- 아이디 찾기 -->
+      <section id="paneId" role="tabpanel" aria-labelledby="tabId">
+        <p class="auth-help">가입하실 때 입력하신 이름과 휴대폰 번호를 입력해 주세요.</p>
+        <form id="findIdForm" novalidate>
+          <label>이름<input name="name" autocomplete="name" required /></label>
+          <label>휴대폰 번호<input name="phone" type="tel" inputmode="numeric" autocomplete="tel" required placeholder="010-0000-0000" /></label>
+          <p class="auth-error" id="findIdError" role="alert" hidden></p>
+          <button class="btn btn-primary auth-submit" type="submit">아이디 찾기</button>
+        </form>
+        <div id="findIdResult" class="find-result" hidden></div>
+      </section>
+
+      <!-- 비밀번호 찾기 -->
+      <section id="panePw" role="tabpanel" aria-labelledby="tabPw" hidden>
+        <form id="resetReqForm" novalidate>
+          <p class="auth-help">가입하신 이메일(아이디)과 이름을 입력하시면 이메일로 인증번호를 보내 드립니다.</p>
+          <label>이메일 (아이디)<input name="email" type="email" autocomplete="username" required placeholder="name@example.com" /></label>
+          <label>이름<input name="name" autocomplete="name" required /></label>
+          <p class="auth-error" id="resetReqError" role="alert" hidden></p>
+          <button class="btn btn-primary auth-submit" type="submit">인증번호 받기</button>
+        </form>
+
+        <form id="resetForm" novalidate hidden>
+          <p class="auth-msg" id="resetSent" role="status"></p>
+          <label data-for="code"><span class="lbl">인증번호 6자리</span>
+            <input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required />
+            <small class="field-err"></small>
+          </label>
+          <label data-for="newPw"><span class="lbl">새 비밀번호 <i>(영문·숫자 포함 8자 이상)</i></span>
+            <span class="pw-field"><input name="newPw" type="password" autocomplete="new-password" required /><button type="button" class="pw-toggle" aria-label="비밀번호 보기">보기</button></span>
+            <small class="field-err"></small>
+          </label>
+          <label data-for="newPw2"><span class="lbl">새 비밀번호 확인</span>
+            <input name="newPw2" type="password" autocomplete="new-password" required />
+            <small class="field-err"></small>
+          </label>
+          <p class="auth-error" id="resetError" role="alert" hidden></p>
+          <button class="btn btn-primary auth-submit" type="submit">비밀번호 변경</button>
+          <button type="button" class="link-plain" id="resendCode">인증번호 다시 받기</button>
+        </form>
+
+        <div id="resetAdmin" class="find-result" hidden>
+          <p><b>비밀번호 재설정 요청이 접수되었습니다.</b></p>
+          <p>담당자가 영업시간(월~토 09:00~18:00) 내에 가입하신 휴대폰 번호로 연락드려 본인 확인 후 임시 비밀번호를 안내해 드립니다.</p>
+          <p class="muted small">급하신 경우 010-5459-3111로 전화 주세요.</p>
+        </div>
+      </section>
+
+      <div class="auth-alt">
+        <a class="btn btn-ghost" href="login.html">로그인</a>
+        <a class="btn btn-ghost" href="signup.html">회원가입</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+        <p>수입차 부품 유통과<br />브레이크 디스크 카오스 가공</p>
+      </div>
+      <div class="footer-col">
+        <b class="footer-h">바로가기</b>
+        <div class="footer-links">
+          <a href="about.html">회사 소개</a><a href="technology.html">카오스 가공</a>
+          <a href="index.html#top">부품 검색</a><a href="consult.html">가공 상담</a>
+          <a href="products.html">전체 상품</a><a href="index.html#inquiry">문의</a>
+          <a href="order.html">주문·배송 조회</a>
+        </div>
+      </div>
+      <div class="footer-col footer-cs">
+        <b class="footer-h">고객센터</b>
+        <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
+        <span>월~토 09:00 ~ 18:00</span>
+        <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
+        <a class="footer-btn" href="index.html#inquiry">문의하기</a>
+      </div>
+    </div>
+    <div class="wrap footer-legal">
+      <p><span>(주)카리브무역</span> <i>|</i> <span>대표 김철민</span> <i>|</i> <span>사업자등록번호 608-86-12959</span> <i>|</i> <span>통신판매업 신고 제2023-울산남구-1093호</span><br /><span>울산광역시 북구 진장로 16</span></p>
+      <p>© 2026 CARIBE TRADING. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site-nav.js"></script>
+  <script src="remote.js"></script>
+  <script src="auth.js"></script>
+  <script src="find.js"></script>
+</body>
+</html>

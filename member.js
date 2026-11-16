@@ -49,13 +49,13 @@
   // ================= 로그인 =================
   if (page === "login") {
     if (A.current()) { SiteNav.go(A.safeNext("mypage.html"), true); return; }
+    if (A.ready) A.ready.then(() => { if (A.current()) SiteNav.go(A.safeNext("mypage.html"), true); });
     const seeding = window.DEMO_ACCOUNTS ? A.seedDemo(window.DEMO_ACCOUNTS).catch(() => {}) : Promise.resolve();
     const next = SiteNav.params().get("next");
     if (next) {
       $("#toSignup").href = "signup.html?next=" + encodeURIComponent(next);
       if (/^mypage\.html/.test(next)) { const m = $("#loginInfo"); m.textContent = "로그인 후 이용하실 수 있는 페이지입니다."; m.classList.remove("hidden"); }
     }
-    $("#findPw").onclick = () => $("#findPwHelp").classList.toggle("hidden");
     const form = $("#loginForm");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -66,7 +66,8 @@
         await seeding;
         const r = await A.login(form.email.value, form.password.value, form.remember.checked);
         if (!r.ok) { err.textContent = r.error; err.hidden = false; form.password.value = ""; form.password.focus(); return; }
-        SiteNav.go(A.safeNext("mypage.html"));
+        // 임시 비밀번호로 로그인했으면 마이페이지에서 새 비밀번호로 바꾸도록
+        SiteNav.go(r.mustChangePw ? "mypage.html#pwForm" : A.safeNext("mypage.html"));
       } catch (ex) { err.textContent = ex.message || "로그인 중 오류가 발생했습니다."; err.hidden = false; }
       finally { busy(btn, false); }
     });
@@ -112,9 +113,12 @@
   }
 
   // ================= 마이페이지 =================
-  if (page === "mypage") {
+  // 새 탭 등에서 화면용 로그인 정보가 없으면 서버에 한 번 물어본 뒤 결정
+  if (page === "mypage" && !A.current()) {
+    (A.ready || Promise.resolve()).then(() => { if (A.current()) location.reload(); else SiteNav.go("login.html?next=mypage.html", true); });
+  }
+  if (page === "mypage" && A.current()) {
     let me = A.current();
-    if (!me) { SiteNav.go("login.html?next=mypage.html", true); return; }
     const get = (k) => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } };
     const STATUS = ["접수", "검토 중", "견적 안내", "작업 완료", "취소"];
     const badge = (s) => `<span class="status s${Math.max(0, STATUS.indexOf(s || "접수"))}">${esc(s || "접수")}</span>`;
@@ -132,6 +136,31 @@
         const w = $("#myWelcome"); w.textContent = `${me.name}님, 회원가입을 환영합니다. 이제 상담·문의 시 연락처가 자동으로 입력되며, 진행 상황을 이곳에서 확인하실 수 있습니다.`; w.classList.remove("hidden");
       }
     } catch (e) {}
+    // 임시 비밀번호(관리자 발급)로 로그인한 경우: 비밀번호 변경 안내
+    function pwNotice() {
+      const w = $("#myWelcome");
+      if (me.mustChangePw) {
+        w.innerHTML = `임시 비밀번호로 로그인하셨습니다. 아래 <a href="#pwForm">비밀번호 변경</a>에서 새 비밀번호로 바꿔 주세요.`;
+        w.classList.remove("hidden"); w.classList.add("warn");
+      } else if (w.classList.contains("warn")) { w.classList.add("hidden"); w.classList.remove("warn"); }
+    }
+    pwNotice();
+
+    // 서버에 있는 내 주문을 이 브라우저 목록에 합침 (다른 기기에서 한 주문, 담당자가 바꾼 상태·송장번호)
+    async function pullOrders() {
+      const list = await A.myOrders();
+      if (!list || !list.length) return;
+      const all = get("carib_orders");
+      let changed = false;
+      list.forEach((o) => {
+        const i = all.findIndex((x) => x.id === o.id);
+        if (i < 0) { all.push(o); changed = true; return; }
+        const t = all[i];
+        ["status", "courier", "tracking", "shippedAt", "updatedAt"].forEach((k) => { if (o[k] !== undefined && t[k] !== o[k]) { t[k] = o[k]; changed = true; } });
+        if (o.payment && t.payment && t.payment.paid !== o.payment.paid) { t.payment.paid = o.payment.paid; changed = true; }
+      });
+      if (changed) { localStorage.setItem("carib_orders", JSON.stringify(all)); renderLists(); }
+    }
 
     function renderLists() {
       const reqs = get("carib_requests").filter((r) => r.memberId === me.id);
@@ -229,11 +258,15 @@
       f.classList.toggle("is-biz", me.type === "biz");
     }
     const pf = $("#profileForm"); clearOnInput(pf);
-    pf.addEventListener("submit", (e) => {
+    pf.addEventListener("submit", async (e) => {
       e.preventDefault();
       $("#profileOk").classList.add("hidden");
-      const r = A.updateProfile({ name: pf.name.value, phone: pf.phone.value, company: pf.company.value, bizNo: pf.bizNo.value, marketing: pf.marketing.checked });
-      if (!r.ok) return showErrors(pf, r.errors);
+      const btn = pf.querySelector("button[type=submit]"); busy(btn, true, "저장 중…");
+      let r;
+      try { r = await A.updateProfile({ name: pf.name.value, phone: pf.phone.value, company: pf.company.value, bizNo: pf.bizNo.value, marketing: pf.marketing.checked }); }
+      finally { busy(btn, false); }
+      if (!r.ok) { if (r.errors && r.errors._) { const ok = $("#profileOk"); ok.textContent = r.errors._; ok.classList.remove("hidden"); } return showErrors(pf, r.errors); }
+      $("#profileOk").textContent = "저장되었습니다.";
       me = r.member; fillProfile(); renderHead(); A.renderHeader();
       $("#profileOk").classList.remove("hidden");
     });
@@ -245,8 +278,9 @@
       const btn = pw.querySelector("button[type=submit]"); busy(btn, true, "변경 중…");
       try {
         const r = await A.changePassword(pw.oldPw.value, pw.newPw.value, pw.newPw2.value);
-        if (!r.ok) return showErrors(pw, r.errors);
-        pw.reset(); $("#pwOk").classList.remove("hidden");
+        if (!r.ok) { if (r.errors && r.errors._) { const ok = $("#pwOk"); ok.textContent = r.errors._; ok.classList.remove("hidden"); } return showErrors(pw, r.errors); }
+        pw.reset(); $("#pwOk").textContent = "비밀번호가 변경되었습니다."; $("#pwOk").classList.remove("hidden");
+        if (r.member) { me = r.member; pwNotice(); }
       } finally { busy(btn, false); }
     });
 
@@ -271,5 +305,12 @@
     renderHead(); renderLists(); fillProfile();
     window.addEventListener("storage", (e) => { if (e.key === "carib_requests" || e.key === "inquiries" || e.key === "carib_orders") renderLists(); });
     window.addEventListener("remote:sync", renderLists); // 담당자가 바꾼 주문·의뢰 상태를 서버에서 받아 오면 다시 그림
+    pullOrders();
+    // 서버 확인 결과 로그인이 풀렸으면 로그인 화면으로, 정보가 바뀌었으면 다시 그림
+    window.addEventListener("auth:change", () => {
+      const now = A.current();
+      if (!now) { SiteNav.go("login.html?next=mypage.html", true); return; }
+      me = now; renderHead(); fillProfile(); pwNotice();
+    });
   }
 })();

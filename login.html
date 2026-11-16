@@ -46,12 +46,11 @@
         </label>
         <div class="auth-row">
           <label class="check"><input type="checkbox" name="remember" /> 로그인 상태 유지</label>
-          <button type="button" class="link-plain" id="findPw">비밀번호를 잊으셨나요?</button>
+          <span class="find-links"><a class="link-plain" href="find.html">아이디 찾기</a><span aria-hidden="true">·</span><a class="link-plain" href="find.html#pw">비밀번호 찾기</a></span>
         </div>
         <p class="auth-error" id="loginError" role="alert" hidden></p>
         <button class="btn btn-primary auth-submit" type="submit">로그인</button>
       </form>
-      <p class="auth-help hidden" id="findPwHelp">010-5459-3111로 전화 주시면 확인 후 재설정해 드립니다.</p>
       <div class="auth-alt">
         <span>아직 회원이 아니신가요?</span>
         <a class="btn btn-ghost" id="toSignup" href="signup.html">회원가입</a>

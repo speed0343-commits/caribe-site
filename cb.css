@@ -527,3 +527,26 @@
 .cb .order-card header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .cb .order-card .my-id { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; }
 .cb .order-card .order-what { margin: 6px 0 14px; font-size: 15px; }
+
+/* ---------- 아이디·비밀번호 찾기 ---------- */
+.cb .find-links { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.cb .find-links span { color: #9aa8a1; }
+.cb .find-card { max-width: 520px; }
+.cb .find-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: -4px 0 20px; border-bottom: 1px solid #d3ddd8; }
+.cb .find-tabs button { padding: 14px 8px; border: 0; border-bottom: 3px solid transparent; background: none; font: inherit; font-size: 16px; font-weight: 700; color: #6b7570; cursor: pointer; }
+.cb .find-tabs button.on { color: #1f2422; border-bottom-color: #0b6e4f; }
+.cb .find-card form { display: grid; gap: 14px; }
+.cb .find-card form label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+.cb .find-result { margin-top: 18px; padding: 18px; border-radius: 16px; background: #f4f8f6; font-size: 15px; line-height: 1.7; }
+.cb .find-result p { margin: 0 0 8px; }
+.cb .find-ids { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.cb .find-ids li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 14px; background: #fff; border-radius: 12px; }
+.cb .find-ids b { font-size: 16px; overflow-wrap: anywhere; }
+.cb .find-next { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.cb .find-next .btn { min-height: 46px; padding: 0 22px; font-size: 15px; }
+.cb #resendCode { justify-self: center; font-size: 14px; }
+.cb .auth-msg.warn { background: #fff4e5; color: #8a4b08; border-left-color: #b45309; }
+/* 관리자: 작은 버튼 · 임시 비밀번호 */
+.cb .btn.btn-sm { min-height: 34px; padding: 0 12px; font-size: 13px; white-space: nowrap; }
+.cb .temp-pw b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 22px; letter-spacing: 1px; margin-right: 10px; }
+.cb .find-card [hidden] { display: none !important; }

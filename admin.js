@@ -135,11 +135,12 @@ function renderTable() {
     // 회원 목록 (비밀번호 변환값은 표시하지 않음)
     const reqs = getReqs(), inqs = getInqs();
     const list = store.get("carib_members", []).map(({ salt, hash, ...m }) => m).filter((m) => matches(m, q)).reverse();
-    $("#table").innerHTML = `<thead><tr><th>가입일</th><th>회원번호</th><th>구분</th><th>이름</th><th>업체명</th><th>이메일</th><th>휴대폰</th><th>마케팅 수신</th><th>최근 로그인</th><th>의뢰</th><th>문의</th></tr></thead><tbody>` +
+    $("#table").innerHTML = `<thead><tr><th>가입일</th><th>회원번호</th><th>구분</th><th>이름</th><th>업체명</th><th>이메일</th><th>휴대폰</th><th>마케팅 수신</th><th>최근 로그인</th><th>의뢰</th><th>문의</th><th>비밀번호</th></tr></thead><tbody>` +
       (list.length ? list.map((m) => `<tr data-mem="${esc(m.id)}"><td>${esc((m.createdAt || "").slice(0, 10))}</td><td><b>${esc(m.id)}</b>${m.demo ? ' <span class="tag">시연</span>' : ""}</td><td>${m.type === "biz" ? "사업자" : "개인"}</td><td>${esc(m.name)}</td><td>${esc(m.company || "-")}</td>
         <td>${esc(m.email)}</td><td>${esc(m.phone)}</td><td>${m.agree?.marketing ? "동의" : "-"}</td><td>${esc(fmtDT(m.lastLoginAt) || "-")}</td>
-        <td>${reqs.filter((r) => r.memberId === m.id).length}</td><td>${inqs.filter((r) => r.memberId === m.id).length}</td></tr>`).join("")
-        : `<tr><td colspan="11" class="muted" style="text-align:center;padding:28px">가입한 회원이 없습니다. <a href="signup.html">회원가입</a>에서 만들어 보십시오.</td></tr>`) + "</tbody>";
+        <td>${reqs.filter((r) => r.memberId === m.id).length}</td><td>${inqs.filter((r) => r.memberId === m.id).length}</td>
+        <td>${m.account ? `<button type="button" class="btn btn-ghost btn-sm" data-temp-pw="${esc(m.id)}" data-name="${esc(m.name)}">임시 비밀번호 발급</button>${m.mustChangePw ? '<br /><span class="muted small">임시 비밀번호 사용 중</span>' : ""}` : '<span class="muted small">예전 방식 가입</span>'}</td></tr>`).join("")
+        : `<tr><td colspan="12" class="muted" style="text-align:center;padding:28px">가입한 회원이 없습니다. <a href="signup.html">회원가입</a>에서 만들어 보십시오.</td></tr>`) + "</tbody>";
   } else if (tab === "ai") {
     const list = aiGroups().filter((g) => matches(g, q) && (!st || g.status === st)).sort((a, b) => (a.status === "미처리" ? 0 : 1) - (b.status === "미처리" ? 0 : 1) || b.items.length - a.items.length || String(b.last).localeCompare(String(a.last)));
     $("#table").innerHTML = `<thead><tr><th>질문</th><th>받은 횟수</th><th>마지막</th><th>대화 중 차량</th><th>상태</th></tr></thead><tbody>` +
@@ -333,3 +334,24 @@ $("#table").addEventListener("click", (e) => {
 renderAll();
 const qid = SiteNav.params().get("id");
 if (qid) showReq(qid);
+
+// ---------------- 회원 임시 비밀번호 발급 (비밀번호 찾기 요청 → 전화로 본인 확인 후) ----------------
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest && e.target.closest("[data-temp-pw]"); if (!b) return;
+  e.stopPropagation();
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 발급"; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = "임시 비밀번호 발급"; } }, 5000); return; }
+  b.disabled = true; b.textContent = "발급 중…";
+  let r = {};
+  try {
+    const res = await fetch("/api/admin", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "member-temp-password", id: b.dataset.tempPw }) });
+    r = await res.json().catch(() => ({}));
+  } catch (err) {}
+  b.disabled = false; delete b.dataset.armed; b.textContent = "임시 비밀번호 발급";
+  if (!r.ok) { alert("발급하지 못했습니다. 잠시 후 다시 시도해 주세요."); return; }
+  $("#detail").innerHTML = `<section class="panel"><h2>임시 비밀번호 발급</h2>
+    <p><b>${esc(b.dataset.name)}</b> 회원의 임시 비밀번호입니다. 전화로 본인 확인을 한 뒤 알려 주세요.</p>
+    <p class="temp-pw"><b>${esc(r.password)}</b> <button type="button" class="btn btn-ghost btn-sm" id="copyTempPw">복사</button></p>
+    <p class="muted small">이 화면을 벗어나면 다시 볼 수 없습니다. 고객이 이 비밀번호로 로그인하면 마이페이지에서 새 비밀번호로 바꾸도록 안내됩니다. 기존에 로그인돼 있던 기기는 모두 로그아웃됩니다.</p></section>`;
+  $("#copyTempPw").onclick = () => navigator.clipboard && navigator.clipboard.writeText(r.password).then(() => { $("#copyTempPw").textContent = "복사됨"; });
+  $("#detail").scrollIntoView({ behavior: "smooth" });
+});

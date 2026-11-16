@@ -13,7 +13,7 @@ const RULES = {
   order: { prefix: "OR", key: true, status: "주문 접수", max: 40_000 },
   request: { prefix: "CR", key: true, status: "접수", max: 80_000 },
   inquiry: { prefix: "IQ", status: "접수", max: 20_000 },
-  member: { prefix: "M", max: 5_000 },
+  // member: 회원 계정은 /api/account 에서만 만듦 (누구나 회원 기록을 미리 만들어 두지 못하게)
   unanswered: { prefix: "AQ", status: "미처리", max: 3_000 },
 };
 const ID_RE = /^[A-Za-z]{1,3}-[A-Za-z0-9-]{3,40}$/;

@@ -1,9 +1,10 @@
 // ============================================================
-// 회원가입 · 로그인 (시연용)
-// - 회원 정보는 이 브라우저 localStorage 에만 저장됩니다. 서버 전송 없음.
-// - 비밀번호는 원문을 저장하지 않고 PBKDF2(SHA-256, 무작위 salt)로 변환한 값만 저장합니다.
-// - 실제 운영: 서버 API(POST /api/auth/signup, /api/auth/login)와 서버 세션(HttpOnly 쿠키)으로 교체해야 합니다.
-//   브라우저 저장소 방식은 같은 PC를 쓰는 사람이 데이터를 볼 수 있어 실제 개인정보 보관에 쓰면 안 됩니다.
+// 회원가입 · 로그인 · 아이디/비밀번호 찾기
+// - 회원 계정은 서버(/api/account)에 저장되고, 로그인은 서버가 주는 HttpOnly 쿠키로 유지됩니다.
+//   어느 기기에서나 같은 계정으로 로그인할 수 있습니다. 비밀번호는 서버에서 scrypt 로 변환해 저장합니다.
+// - 화면에서 쓰는 회원 정보(이름·연락처 등)만 이 브라우저(carib_session)에 같이 담아 두고, 페이지를 열 때 서버로 다시 확인합니다.
+// - 예전 방식(이 브라우저 localStorage 에만 저장)으로 가입한 계정은 다음 로그인 때 서버로 옮겨집니다.
+// - 서버 저장소가 없는 환경(로컬에서 python 으로 열기 등)에서는 예전처럼 이 브라우저 안에서만 동작합니다(시연용).
 // ============================================================
 (function () {
   "use strict";
@@ -59,31 +60,64 @@
   const newSalt = () => hex(crypto.getRandomValues(new Uint8Array(16)));
   function sameHash(a, b) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
 
-  // ---------- 회원 저장소 ----------
+  // ---------- 예전 방식: 이 브라우저에 저장된 회원 (서버 없을 때 · 옮기기 전 계정) ----------
   const members = () => ls.get(MEMBERS_KEY, []);
   const saveMembers = (list) => ls.set(MEMBERS_KEY, list);
   const findByEmail = (email) => members().find((m) => m.email === normEmail(email));
   const publicView = (m) => { if (!m) return null; const { salt, hash, ...rest } = m; return rest; };
 
+  // ---------- 로그인 상태 (화면용 회원 정보 보관) ----------
+  // { id, at, mode: "server", m: 회원 정보 }  /  예전 방식은 { id, at }
   function readSession() {
     try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { return null; }
   }
-  function writeSession(id, remember) {
-    const s = JSON.stringify({ id, at: new Date().toISOString() });
+  const remembered = () => { try { return !!localStorage.getItem(SESSION_KEY); } catch (e) { return false; } };
+  // HINT: 이 브라우저에서 서버 로그인을 한 적이 있음 → 새 탭(세션 정보 없음)에서도 서버에 로그인 상태를 물어봄
+  const HINT = "carib_auth_hint";
+  function writeSession(id, remember, m) {
+    const s = JSON.stringify(m ? { id, at: new Date().toISOString(), mode: "server", m } : { id, at: new Date().toISOString() });
     try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (e) {}
-    try { (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, s); } catch (e) {}
+    try { (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, s); if (m) localStorage.setItem(HINT, "1"); } catch (e) {}
   }
-  function clearSession() { try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+  function clearSession() { try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); localStorage.removeItem(HINT); } catch (e) {} }
+  const serverSession = () => { const s = readSession(); return s && s.mode === "server" ? s : null; };
 
   function current() {
     const s = readSession(); if (!s || !s.id) return null;
+    if (s.mode === "server") return s.m || null;
     const m = members().find((x) => x.id === s.id);
     if (!m) { clearSession(); return null; }
     return publicView(m);
   }
 
+  // ---------- 서버 호출 ----------
+  const LOCALHOST = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  async function api(action, payload) {
+    try {
+      const r = await fetch("/api/account", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ...(payload || {}) }) });
+      let data = {}; try { data = await r.json(); } catch (e) {}
+      return { status: r.status, ok: r.ok && data.ok !== false, data };
+    } catch (e) { return { status: 0, ok: false, data: {} }; }
+  }
+  // 서버 저장소가 없는 환경 → 예전 방식(이 브라우저)으로 동작
+  // (이 API 는 항상 { ok: … } 를 돌려줌 → ok 가 없는 404·405·501 은 API 자체가 없는 정적 서버, 503 은 저장소 미설정)
+  const noServer = (r) => r.status === 503 || ([404, 405, 501].includes(r.status) && r.data.ok === undefined) || (r.status === 0 && LOCALHOST);
+  const netError = { ok: false, error: "인터넷 연결을 확인한 뒤 다시 시도해 주세요." };
+  const errOf = (r, fallback) => (r.data && r.data.error) || fallback || "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+  const changed = () => { renderHeader(); window.dispatchEvent(new CustomEvent("auth:change")); };
+
+  // 페이지를 열 때 서버로 로그인 상태 확인 (다른 기기에서 비밀번호를 바꿨거나 로그아웃·탈퇴한 경우 정리)
+  async function refresh() {
+    const s = readSession();
+    let hint = false; try { hint = !!localStorage.getItem(HINT); } catch (e) {}
+    if (!(s && s.id) && !hint) return;
+    const r = await api("me");
+    if (r.ok && r.data.member) { writeSession(r.data.member.id, remembered(), r.data.member); changed(); return; }
+    if (r.status === 401) { clearSession(); changed(); } // 서버 로그인 아님 (예전 방식 로그인도 여기서 정리 → 다시 로그인하면 서버로 옮겨짐)
+  }
+
   // ---------- 가입 ----------
-  async function signup(input) {
+  function checkSignup(input) {
     const errors = {};
     const type = input.type === "biz" ? "biz" : "personal";
     const name = String(input.name || "").trim();
@@ -93,7 +127,6 @@
     const bizNo = String(input.bizNo || "").trim();
     if (name.length < 2) errors.name = "이름을 2자 이상 입력해 주세요.";
     if (!isEmail(email)) errors.email = "이메일 형식을 확인해 주세요.";
-    else if (findByEmail(email)) errors.email = "이미 가입된 이메일입니다.";
     const pp = pwProblem(input.password); if (pp) errors.password = pp;
     if (input.password !== input.password2) errors.password2 = "비밀번호가 일치하지 않습니다.";
     if (!isMobile(phone)) errors.phone = "휴대폰 번호를 확인해 주세요. (예: 010-1234-5678)";
@@ -104,21 +137,31 @@
     const a = input.agree || {};
     if (!a.age) errors.age = "만 14세 이상만 가입하실 수 있습니다.";
     if (!a.terms || !a.privacy) errors.agree = "필수 약관에 동의해 주세요.";
-    if (Object.keys(errors).length) return { ok: false, errors };
-
+    return { errors, type, name, email, phone, company, bizNo, a };
+  }
+  async function signup(input) {
+    const c = checkSignup(input);
+    if (Object.keys(c.errors).length) return { ok: false, errors: c.errors };
+    const r = await api("signup", { type: c.type, name: c.name, email: c.email, phone: c.phone, company: c.company, bizNo: c.bizNo, password: input.password, password2: input.password2, agree: c.a });
+    if (r.ok) { writeSession(r.data.member.id, false, r.data.member); return { ok: true, member: r.data.member }; }
+    if (noServer(r)) return localSignup(input, c);
+    if (r.status === 0) return { ok: false, errors: { _: netError.error }, error: netError.error };
+    if (r.data.errors) return { ok: false, errors: r.data.errors };
+    const e = errOf(r); return { ok: false, errors: { _: e }, error: e };
+  }
+  async function localSignup(input, c) {
+    if (findByEmail(c.email)) return { ok: false, errors: { email: "이미 가입된 이메일입니다." } };
     const salt = newSalt();
     const hash = await hashPw(input.password, salt);
     const now = new Date().toISOString();
     const m = {
       id: "M-" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase(),
-      type, name, email, phone,
-      company: type === "biz" ? company : "", bizNo: type === "biz" && bizNo ? fmtBizNo(bizNo) : "",
-      agree: { age: true, terms: true, privacy: true, marketing: !!a.marketing, at: now },
+      type: c.type, name: c.name, email: c.email, phone: c.phone,
+      company: c.type === "biz" ? c.company : "", bizNo: c.type === "biz" && c.bizNo ? fmtBizNo(c.bizNo) : "",
+      agree: { age: true, terms: true, privacy: true, marketing: !!c.a.marketing, at: now },
       createdAt: now, lastLoginAt: now, salt, hash,
     };
     const list = members(); list.push(m); saveMembers(list);
-    // 관리자 '회원' 목록용으로 서버에 보냄 (비밀번호 변환값은 보내지 않음)
-    if (window.Remote) { const { salt: _s, hash: _h, ...pub } = m; Remote.send("member", pub); }
     writeSession(m.id, false);
     return { ok: true, member: publicView(m) };
   }
@@ -130,6 +173,34 @@
   async function login(emailIn, pw, remember) {
     const email = normEmail(emailIn);
     if (!email || !pw) return { ok: false, error: "이메일과 비밀번호를 입력해 주세요." };
+    const r = await api("login", { email, password: pw, remember: !!remember });
+    if (r.ok) { writeSession(r.data.member.id, !!remember, r.data.member); return { ok: true, member: r.data.member, mustChangePw: !!r.data.member.mustChangePw }; }
+    if (noServer(r)) return localLogin(email, pw, remember);
+    if (r.status === 0) return netError;
+    // 서버에 없는 계정 → 예전 방식으로 이 브라우저에 가입한 계정이면 서버로 옮기고 로그인
+    if (r.status === 401) {
+      const moved = await migrate(email, pw, remember);
+      if (moved) return moved;
+    }
+    return { ok: false, error: errOf(r, "이메일 또는 비밀번호가 일치하지 않습니다.") };
+  }
+  async function migrate(email, pw, remember) {
+    const m = findByEmail(email);
+    if (!m || m.demo) return null; // 시연용 계정은 옮기지 않음
+    let same = false;
+    try { same = sameHash(await hashPw(pw, m.salt), m.hash); } catch (e) { return null; }
+    if (!same) return null;
+    const r = await api("signup", { migrated: true, id: m.id, createdAt: m.createdAt, type: m.type, name: m.name, email: m.email, phone: m.phone, company: m.company, bizNo: m.bizNo,
+      password: pw, password2: pw, agree: { age: true, terms: true, privacy: true, marketing: !!(m.agree && m.agree.marketing) } });
+    if (!r.ok) return null;
+    saveMembers(members().filter((x) => x.id !== m.id)); // 이 브라우저에 있던 비밀번호 변환값은 지움
+    // 가입 응답은 '로그인 유지' 없이 로그인 → 로그인 유지를 골랐으면 한 번 더 로그인해 쿠키를 바꿈
+    let member = r.data.member;
+    if (remember) { const r2 = await api("login", { email, password: pw, remember: true }); if (r2.ok) member = r2.data.member; }
+    writeSession(member.id, !!remember, member);
+    return { ok: true, member, migrated: true };
+  }
+  async function localLogin(email, pw, remember) {
     const f = failInfo(email);
     if (f.until && f.until > Date.now()) {
       const min = Math.ceil((f.until - Date.now()) / 60000);
@@ -149,11 +220,20 @@
     writeSession(m.id, !!remember);
     return { ok: true, member: publicView(t) };
   }
-  function logout() { clearSession(); }
+  function logout() {
+    if (serverSession()) api("logout");
+    clearSession();
+  }
 
   // ---------- 회원정보 수정 · 비밀번호 변경 · 탈퇴 ----------
-  function updateProfile(input) {
+  async function updateProfile(input) {
     const me = current(); if (!me) return { ok: false, errors: { _: "로그인이 필요합니다." } };
+    if (serverSession()) {
+      const r = await api("update", { name: input.name, phone: input.phone, company: input.company, bizNo: input.bizNo, marketing: !!input.marketing });
+      if (r.ok) { writeSession(r.data.member.id, remembered(), r.data.member); return { ok: true, member: r.data.member }; }
+      if (r.status === 401) { clearSession(); changed(); }
+      return { ok: false, errors: r.data.errors || { _: errOf(r) } };
+    }
     const errors = {};
     const name = String(input.name || "").trim();
     const phone = fmtPhone(input.phone);
@@ -175,6 +255,12 @@
   }
   async function changePassword(oldPw, newPw, newPw2) {
     const me = current(); if (!me) return { ok: false, errors: { _: "로그인이 필요합니다." } };
+    if (serverSession()) {
+      const r = await api("password", { oldPw, newPw, newPw2, remember: remembered() });
+      if (r.ok) { writeSession(r.data.member.id, remembered(), r.data.member); return { ok: true, member: r.data.member }; }
+      if (r.status === 401) { clearSession(); changed(); }
+      return { ok: false, errors: r.data.errors || { _: errOf(r) } };
+    }
     const list = members(); const t = list.find((x) => x.id === me.id);
     if (!sameHash(await hashPw(oldPw || "", t.salt), t.hash)) return { ok: false, errors: { oldPw: "현재 비밀번호가 일치하지 않습니다." } };
     const pp = pwProblem(newPw); if (pp) return { ok: false, errors: { newPw: pp } };
@@ -186,6 +272,12 @@
   }
   async function withdraw(pw) {
     const me = current(); if (!me) return { ok: false, error: "로그인이 필요합니다." };
+    if (serverSession()) {
+      const r = await api("withdraw", { password: pw });
+      if (!r.ok) return { ok: false, error: errOf(r, "비밀번호가 일치하지 않습니다.") };
+      clearSession();
+      return { ok: true };
+    }
     const list = members(); const t = list.find((x) => x.id === me.id);
     if (!sameHash(await hashPw(pw || "", t.salt), t.hash)) return { ok: false, error: "비밀번호가 일치하지 않습니다." };
     saveMembers(list.filter((x) => x.id !== me.id));
@@ -193,7 +285,48 @@
     return { ok: true };
   }
 
-  // 시연용 계정 준비 (login.html 에서 data/demo-accounts.js 가 있을 때만)
+  // ---------- 아이디 찾기 · 비밀번호 찾기 ----------
+  function maskEmail(e) {
+    const [u, d] = normEmail(e).split("@"); if (!d) return "";
+    const keep = u.length <= 2 ? 1 : u.length <= 4 ? 2 : 3;
+    return u.slice(0, keep) + "*".repeat(Math.max(2, u.length - keep)) + "@" + d;
+  }
+  async function findId(name, phone) {
+    name = String(name || "").trim();
+    if (name.length < 2 || !isMobile(phone)) return { ok: false, error: "이름과 휴대폰 번호를 확인해 주세요." };
+    const r = await api("find-id", { name, phone });
+    if (r.ok) return { ok: true, ids: r.data.ids };
+    if (noServer(r)) {
+      const ids = members().filter((m) => m.name === name && digits(m.phone) === digits(phone)).map((m) => ({ email: maskEmail(m.email), createdAt: (m.createdAt || "").slice(0, 10) }));
+      return ids.length ? { ok: true, ids } : { ok: false, error: "입력하신 정보와 일치하는 회원이 없습니다." };
+    }
+    if (r.status === 0) return netError;
+    return { ok: false, error: errOf(r) };
+  }
+  async function resetRequest(email, name) {
+    email = normEmail(email); name = String(name || "").trim();
+    if (!isEmail(email) || name.length < 2) return { ok: false, error: "이메일과 이름을 확인해 주세요." };
+    const r = await api("reset-request", { email, name });
+    if (r.ok) return { ok: true, via: r.data.via, to: r.data.to };
+    if (noServer(r)) return { ok: false, error: "지금은 온라인으로 비밀번호를 찾을 수 없습니다. 010-5459-3111로 전화 주시면 확인해 드립니다." };
+    if (r.status === 0) return netError;
+    return { ok: false, error: errOf(r) };
+  }
+  async function resetConfirm(email, code, newPw, newPw2) {
+    const r = await api("reset-confirm", { email: normEmail(email), code, newPw, newPw2 });
+    if (r.ok) { writeSession(r.data.member.id, false, r.data.member); return { ok: true, member: r.data.member }; }
+    if (r.status === 0) return { ok: false, errors: { _: netError.error } };
+    return { ok: false, errors: r.data.errors || { _: errOf(r) } };
+  }
+  // 마이페이지: 서버에 있는 내 주문 (다른 기기에서 한 주문 포함). 서버 로그인이 아니면 null
+  async function myOrders() {
+    if (!serverSession()) return null;
+    const r = await api("orders");
+    if (r.status === 401) { clearSession(); changed(); return null; }
+    return r.ok ? r.data.orders || [] : null;
+  }
+
+  // 시연용 계정 준비 (login.html 에서 data/demo-accounts.js 가 있을 때만, 이 브라우저 안에서만)
   async function seedDemo(accounts) {
     for (const a of accounts || []) {
       if (findByEmail(a.email)) continue;
@@ -227,7 +360,7 @@
     logout();
     SiteNav.go("index.html");
   });
-  window.addEventListener("storage", (e) => { if (e.key === SESSION_KEY || e.key === MEMBERS_KEY) renderHeader(); });
+  window.addEventListener("storage", (e) => { if (e.key === SESSION_KEY || e.key === MEMBERS_KEY) changed(); });
 
   // 로그인 후 돌아갈 주소 — 같은 사이트 안의 상대 경로만 허용
   function safeNext(fallback) {
@@ -237,9 +370,11 @@
 
   window.CaribAuth = {
     current, signup, login, logout, updateProfile, changePassword, withdraw, seedDemo,
+    findId, resetRequest, resetConfirm, myOrders, refresh, ready: null,
     members: () => members().map(publicView), renderHeader, safeNext,
     util: { esc, fmtPhone, fmtBizNo, isEmail, isMobile, isBizNo, pwProblem },
     MEMBERS_KEY,
   };
   renderHeader();
+  window.CaribAuth.ready = refresh().catch(() => {});
 })();

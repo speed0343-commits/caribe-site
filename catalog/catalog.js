@@ -68,7 +68,7 @@ function build() {
   const modelSet = new Set(), bodySet = new Set();
   LIST.forEach((p) => p.rows.forEach((r) => { modelSet.add(r.make + "|" + r.group); bodySet.add(r.make + "|" + r.body); }));
   page("cover").innerHTML = `<div class="cover-in">
-      <img class="cover-logo" src="${ROOT}assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+      <img class="cover-logo" src="brand/logo-silver.png" alt="CARIBE TRADING 카리브무역" />
       <img class="cover-disc" src="${ROOT}images/brake-discs/hero-disc-b.png" alt="" />
       <div class="cover-txt">
         <p class="kicker">Brake Disc Catalog ${PRICE_DATE.slice(0, 4)}</p>
@@ -342,14 +342,14 @@ function build() {
       <rect x="${(x0 - hatD).toFixed(2)}" y="${(top + H / 2 - hatH / 2).toFixed(1)}" width="${hatD + 1}" height="${hatH.toFixed(1)}" rx="1.5" fill="url(#eHat)"/>
       <rect x="${x0.toFixed(2)}" y="${top}" width="${w.toFixed(2)}" height="${H}" rx="1.2" fill="url(#eMetal)"/>
       ${vents}
-      <g stroke="#55615c" stroke-width=".6" fill="none">
+      <g stroke="#5a6472" stroke-width=".6" fill="none">
         <line x1="${cx + w / 2 + 6}" y1="${top}" x2="${cx + w / 2 + 6}" y2="${top + H}"/>
         <line x1="${cx + w / 2 + 3.5}" y1="${top}" x2="${cx + w / 2 + 8.5}" y2="${top}"/><line x1="${cx + w / 2 + 3.5}" y1="${top + H}" x2="${cx + w / 2 + 8.5}" y2="${top + H}"/>
         <line x1="${x0}" y1="${top + H + 6}" x2="${x0 + w}" y2="${top + H + 6}"/>
         <line x1="${x0}" y1="${top + H + 3.5}" x2="${x0}" y2="${top + H + 8.5}"/><line x1="${x0 + w}" y1="${top + H + 3.5}" x2="${x0 + w}" y2="${top + H + 8.5}"/>
       </g>
-      <text x="${cx + w / 2 + 9}" y="${top + H / 2}" fill="#1b2422" font-size="7.5" font-weight="700" font-family="IBM Plex Mono, monospace" transform="rotate(90 ${cx + w / 2 + 9} ${top + H / 2})" text-anchor="middle">Ø${p.dia || "?"}</text>
-      <text x="${cx}" y="${top + H + 16}" fill="#1b2422" font-size="7.5" font-weight="700" font-family="IBM Plex Mono, monospace" text-anchor="middle">${p.thk || "?"}</text>
+      <text x="${cx + w / 2 + 9}" y="${top + H / 2}" fill="#131922" font-size="7.5" font-weight="700" font-family="IBM Plex Mono, monospace" transform="rotate(90 ${cx + w / 2 + 9} ${top + H / 2})" text-anchor="middle">Ø${p.dia || "?"}</text>
+      <text x="${cx}" y="${top + H + 16}" fill="#131922" font-size="7.5" font-weight="700" font-family="IBM Plex Mono, monospace" text-anchor="middle">${p.thk || "?"}</text>
     </svg>`;
   }
   function photoFig(p) {
@@ -473,7 +473,7 @@ function build() {
 
   // ---------------- 7. 뒤표지 ----------------
   page("back").innerHTML = `<div class="back-in">
-      <img class="cover-logo" src="${ROOT}assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+      <img class="cover-logo" src="brand/logo-silver.png" alt="CARIBE TRADING 카리브무역" />
       <h2>차대번호만 알려 주세요.<br />맞는 디스크를 찾아 드립니다.</h2>
       <p>카탈로그에 없는 품번, 브레이크 외 부품, 카오스 가공 상담도 같은 연락처로 받습니다. 차대번호와 필요한 품목을 문자나 이메일로 보내 주시면 확인해 답해 드립니다.</p>
       <div class="contact">

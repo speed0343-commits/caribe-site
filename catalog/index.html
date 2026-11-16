@@ -13,7 +13,7 @@
 <body>
   <!-- 화면에서만 보이는 도구 막대 (인쇄·PDF에는 안 나옴) -->
   <div class="cat-bar">
-    <a href="index.html" class="cat-bar-home">← 홈페이지</a>
+    <b class="cat-bar-home">카리브무역 카탈로그</b>
     <span class="cat-bar-info" id="catInfo">카탈로그를 만드는 중…</span>
     <a class="cat-bar-btn ghost" href="caribe-catalog.pdf" download>PDF 내려받기</a>
     <button type="button" class="cat-bar-btn" onclick="window.print()">인쇄 / PDF로 저장</button>
@@ -21,10 +21,14 @@
 
   <main id="book" class="book" aria-label="카리브무역 카탈로그"></main>
 
-  <!-- 상품·차종 데이터는 홈페이지와 같은 파일을 씁니다 → 상품이 바뀌면 카탈로그도 같이 바뀝니다 -->
-  <script src="catalog-data.js"></script>
-  <script src="data.js"></script>
-  <script src="core.js"></script>
+  <!-- 홈페이지와 별개로 운영. 상품·차종·연구 데이터 파일만 저장소의 것을 읽어 옵니다 -->
+  <script src="../catalog-data.js"></script>
+  <script src="../data.js"></script>
+  <script src="../core.js"></script>
+  <script src="../data/research-papers.js"></script>
+  <script src="../data/literature-measurements.js"></script>
+  <script src="../data/test-plan.js"></script>
+  <script src="photos/photos.js"></script>
   <script src="catalog.js"></script>
 </body>
 </html>

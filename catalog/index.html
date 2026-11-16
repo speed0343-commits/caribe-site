@@ -15,8 +15,17 @@
   <div class="cat-bar">
     <b class="cat-bar-home">카리브무역 카탈로그</b>
     <span class="cat-bar-info" id="catInfo">카탈로그를 만드는 중…</span>
-    <a class="cat-bar-btn ghost" href="caribe-catalog.pdf" download>PDF 내려받기</a>
-    <button type="button" class="cat-bar-btn" onclick="window.print()">인쇄 / PDF로 저장</button>
+    <span class="cat-bar-save" id="edSave" aria-live="polite"></span>
+    <button type="button" class="cat-bar-btn ghost" id="edToggle">✎ 수정하기</button>
+    <button type="button" class="cat-bar-btn" id="edPdf">PDF 만들기</button>
+  </div>
+  <!-- 수정 모드 보조 막대 -->
+  <div class="ed-bar" id="edBar" hidden>
+    <span>글자를 눌러 바로 고치세요. 고친 곳은 노란색, 넘치는 쪽은 빨간 테두리로 보입니다. 줄바꿈: Enter</span>
+    <button type="button" id="edRevertOne" disabled>이 칸 원래대로</button>
+    <button type="button" id="edRevertAll">모두 원래대로</button>
+    <button type="button" id="edExport">수정 내용 파일 받기</button>
+    <label class="ed-import">수정 내용 불러오기<input type="file" id="edImport" accept=".json,application/json" hidden /></label>
   </div>
 
   <main id="book" class="book" aria-label="카리브무역 카탈로그"></main>
@@ -29,6 +38,7 @@
   <script src="../data/literature-measurements.js"></script>
   <script src="../data/test-plan.js"></script>
   <script src="photos/photos.js"></script>
+  <script src="editor.js"></script>
   <script src="catalog.js"></script>
 </body>
 </html>

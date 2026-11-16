@@ -493,12 +493,11 @@ function build() {
   document.getElementById("tocList").innerHTML = toc.map(([t, n]) => `<li><span>${t}</span><b>${pad(n)}</b></li>`).join("");
   document.getElementById("catInfo").textContent = `A4 ${pageCount}쪽 · 디스크 ${LIST.length}종 · 가격 기준일 ${PRICE_DATE}`;
 
-  // 넘치는 적용 차종 줄 정리. 끝나면 data-ready 표시 (PDF 만들 때 이 표시를 기다림)
-  document.querySelectorAll(".card").forEach(trimFit);
-  document.querySelectorAll(".pg-body").forEach((b, i) => {
-    const kids = [...b.querySelectorAll(":scope > *")];
-    const bottom = Math.max(0, ...kids.map((k) => k.getBoundingClientRect().bottom));
-    if (bottom > b.getBoundingClientRect().bottom + 1) console.warn("넘침:", b.closest(".page").querySelector(".pg-foot b")?.textContent);
-  });
-  document.body.dataset.ready = "1";
+  // 수정 내용(editor.js) 적용 → 넘치는 적용 차종 줄 정리 → data-ready 표시 (PDF 만들 때 이 표시를 기다림)
+  const done = () => {
+    document.querySelectorAll(".card").forEach(trimFit);
+    if (window.CatalogEditor) CatalogEditor.checkOverflow();
+    document.body.dataset.ready = "1";
+  };
+  if (window.CatalogEditor) CatalogEditor.init().then(done, done); else done();
 }

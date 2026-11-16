@@ -365,3 +365,12 @@ body.editing [data-ek].edited { background: #fff2b3; }
 .toc { margin-top: 4.5mm; padding: 4mm 5mm 3mm; }
 .toc li { padding: .9mm 0; font-size: 8.4pt; }
 .side h3 { margin-top: 4.5mm; }
+/* A/S 쪽: 공통 유의사항 · 디스크 기준 두 단 */
+.as-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; margin-top: 6mm; }
+.as-cols .terms { font-size: 8.1pt; line-height: 1.58; gap: 1.6mm; padding-left: 5mm; }
+.as-cols .terms ul { margin: .8mm 0 0; padding-left: 4mm; color: var(--iron); }
+.as-cols .terms ul li { list-style: disc; }
+.terms > li > b { white-space: nowrap; }
+.as-table th, .as-table td { padding-top: 1.6mm; padding-bottom: 1.6mm; }
+.page.aspage .callout { margin-top: 5mm; font-size: 8.4pt; }
+.terms.disc b { color: var(--em-2); }

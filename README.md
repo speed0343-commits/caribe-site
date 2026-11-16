@@ -28,7 +28,7 @@ python3 -m http.server 3000
 
 | 경로 | 내용 |
 | --- | --- |
-| `index.html` | 메인 (부품 검색, 등록 디스크, 카오스 가공, AI 상담, 문의) |
+| `index.html` | 메인 (부품 검색, 판매 중 디스크, 카오스 가공, AI 상담, 문의) |
 | `products.html` | 전체 상품 |
 | `technology.html` | 카오스 가공 소개 |
 | `consult.html` | 가공 상담 |

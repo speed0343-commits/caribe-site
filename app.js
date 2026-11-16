@@ -723,7 +723,7 @@ if (SiteNav.params().get("chat")) { SiteNav.setUrl("index.html"); setTimeout(ope
 const pre = sessionStorage.getItem("prefillInquiry");
 if (pre) { sessionStorage.removeItem("prefillInquiry"); setTimeout(() => prefillInquiry(pre), 300); }
 
-// 메인의 "등록 디스크" 표 (많이 팔린 순 6종)
+// 메인의 "판매 중 디스크" 표 (많이 팔린 순 6종)
 if ($("#homeTable")) {
   $("#homeTable").innerHTML = ptTable(PRODUCTS.filter((p) => p.price).sort((a, b) => (b.sold || 0) - (a.sold || 0)).slice(0, 6), true);
 }

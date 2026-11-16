@@ -285,10 +285,10 @@ const PART_CHIPS = [["부품 구매 문의 (상담사)", "#agent"]];
 let chatMode = "ai";
 let agentId = sessionStorage.getItem("agentChatId");
 let agentSeen = 0;
-const inHours = () => { const d = new Date(), h = d.getHours(); return d.getDay() !== 0 && h >= 9 && h < 18; }; // 월~토 09~18시
+const inHours = () => { const d = new Date(), h = d.getHours(), w = d.getDay(); return w >= 1 && w <= 5 && h >= 9 && h < 18; }; // 월~금 09~18시
 function setAgentHeader(on) {
   $("#chat .chat-head div").innerHTML = on
-    ? '<b>상담사 채팅</b><span class="muted small">카리브무역 상담사가 직접 답변해 드립니다 · 월~토 오전 9시~오후 6시</span>'
+    ? '<b>상담사 채팅</b><span class="muted small">카리브무역 상담사가 직접 답변해 드립니다 · 월~금 오전 9시~오후 6시</span>'
     : '<b>AI 상담</b><span class="muted small">부품 찾기부터 궁금한 점까지 답변해 드립니다</span>';
   $("#chatText").placeholder = on ? "상담사에게 보낼 메시지를 입력하십시오" : "예: 벤츠 W213 뒤 디스크 / 차대번호 / 품번";
   $("#chat").classList.toggle("agent-mode", on);
@@ -311,7 +311,7 @@ function startAgent(firstText) {
   if (window.Remote) { if (isNew) Remote.chatStart(c); else c.messages.filter((m) => m.at === now).forEach((m) => Remote.chatPost(c.id, m)); }
   agentSeen = c.messages.filter((m) => m.who === "agent").length;
   chatMode = "agent"; setAgentHeader(true);
-  say(`디스크 외 부품은 <b>상담사가 직접</b> 안내해 드려요. 상담사 채팅으로 연결했습니다.\n${inHours() ? "영업시간이라 곧 답변드릴게요." : "지금은 영업시간(월~토 오전 9시~오후 6시) 외라 순차적으로 답변드립니다."}\n필요한 부품과 차대번호(또는 차종)를 함께 남겨 주시면 더 빨리 확인할 수 있어요.` + CONTACT_FORM + chips([["AI 상담으로 돌아가기", "#ai"]]));
+  say(`디스크 외 부품은 <b>상담사가 직접</b> 안내해 드려요. 상담사 채팅으로 연결했습니다.\n${inHours() ? "영업시간이라 곧 답변드릴게요." : "지금은 영업시간(월~금 오전 9시~오후 6시) 외라 순차적으로 답변드립니다."}\n필요한 부품과 차대번호(또는 차종)를 함께 남겨 주시면 더 빨리 확인할 수 있어요.` + CONTACT_FORM + chips([["AI 상담으로 돌아가기", "#ai"]]));
 }
 function postToAgent(text) {
   const msg = { who: "customer", text, at: new Date().toISOString() };
@@ -387,10 +387,10 @@ function faqReply(t, text) {
   if (/^(안녕|안녕하세요|안녕하십니까|하이|hi|hello|헬로|반갑)/.test(tt)) return "안녕하세요, 카리브무역 AI 상담입니다.\n차대번호 17자리, OEM 품번, 차종 중 아시는 것을 알려 주시면 맞는 브레이크 디스크를 찾아 드릴게요.\n배송, 결제, 카오스 가공 등 궁금한 점도 편하게 물어보십시오." + ASK_CHIPS;
   if (/(감사|고마|고맙|땡큐|thank)/.test(tt)) return "도움이 됐다니 다행이에요. 더 궁금한 점이 생기면 언제든 물어봐 주십시오.";
   if (/(누구(세요|야|신가요)|사람(이에요|인가요|이야|이세요)|챗봇|로봇|ai(야|에요|예요|인가요))/.test(tt)) return "저는 카리브무역의 AI 상담원이에요. 디스크 찾기는 물론 배송, 결제, 카오스 가공 같은 궁금한 점도 바로 답변드리고, 사람 상담이 필요하면 상담사에게 연결해 드려요." + chips([["상담사와 채팅", "#agent"]]);
-  if (/(상담원|상담사|사람|직원|담당자).*(얘기|이야기|연결|통화|대화|상담|바꿔)/.test(tt)) return `상담사와 바로 채팅하시거나, 전화(${TEL}, 월~토 09:00~18:00)로 문의하실 수 있어요.` + chips([["상담사와 채팅", "#agent"], ["담당자 확인 요청", "#inquiry"]]);
+  if (/(상담원|상담사|사람|직원|담당자).*(얘기|이야기|연결|통화|대화|상담|바꿔)/.test(tt)) return `상담사와 바로 채팅하시거나, 전화(${TEL}, 월~금 09:00~18:00)로 문의하실 수 있어요.` + chips([["상담사와 채팅", "#agent"], ["담당자 확인 요청", "#inquiry"]]);
   // 회사 · 연락
-  if (/(영업\s?시간|운영\s?시간|몇\s?시(까지|부터)|주말|토요일|일요일|공휴일|점심)/.test(tt)) return "상담과 출고는 <b>월요일~토요일 오전 9시~오후 6시</b>에 해요. 일요일은 쉽니다.\n그 외 시간에 남기신 문의는 다음 영업일에 순서대로 답변드립니다.";
-  if (/(전화|연락처|번호\s?(좀|알려)|통화|이메일|메일)/.test(tt)) return `전화 <b>${TEL}</b> (월~토 09:00~18:00)\n이메일 caribetrading@naver.com\n전화가 어려우시면 아래 문의칸에 남겨 주십시오.` + chips([["문의 남기기", "#inquiry"]]);
+  if (/(영업\s?시간|운영\s?시간|몇\s?시(까지|부터)|주말|토요일|일요일|공휴일|점심)/.test(tt)) return "상담과 출고는 <b>월요일~금요일 오전 9시~오후 6시</b>에 해요. 토요일과 일요일은 쉽니다.\n그 외 시간에 남기신 문의는 다음 영업일에 순서대로 답변드립니다.";
+  if (/(전화|연락처|번호\s?(좀|알려)|통화|이메일|메일)/.test(tt)) return `전화 <b>${TEL}</b> (월~금 09:00~18:00)\n이메일 caribetrading@naver.com\n전화가 어려우시면 아래 문의칸에 남겨 주십시오.` + chips([["문의 남기기", "#inquiry"]]);
   if (/(주소|어디에\s?있|어디예요|어디에요|찾아가|방문|매장|픽업|직접\s?(가|받))/.test(tt)) return "주소는 <b>울산광역시 북구 진장로 16</b>이에요.\n방문하실 때는 미리 전화(" + TEL + ") 주시면 재고와 시간을 확인해 드릴게요.";
   // 주문 · 배송 · 결제
   if (/(어디쯤|배송\s?(조회|상태|추적)|주문\s?(조회|내역|확인|상태)|송장)/.test(tt)) return "주문 진행 상황은 <a href=\"mypage.html\">마이페이지</a>에서 확인하실 수 있어요.\n주문 접수 → 적용 확인 → 입금 확인 → 출고 준비 → 배송 중 → 배송 완료 순서로 바뀝니다. 비회원 주문은 <a href=\"order.html\">주문·배송 조회</a>에서 주문번호와 휴대폰 번호로 확인하실 수 있어요. 송장번호가 나오면 배송조회 버튼으로 택배 위치까지 보실 수 있어요.";

@@ -69,7 +69,6 @@ function build() {
   LIST.forEach((p) => p.rows.forEach((r) => { modelSet.add(r.make + "|" + r.group); bodySet.add(r.make + "|" + r.body); }));
   page("cover").innerHTML = `<div class="cover-in">
       <div class="cover-brand"><img class="cover-logo" src="brand/logo-silver.png" alt="CARIBE TRADING" /><span class="co-name">주식회사 카리브무역</span></div>
-      <span class="b2b-mark">B2B 전용 · 거래처 배포용</span>
       <img class="cover-disc" src="${ROOT}images/brake-discs/hero-disc-b.png" alt="" />
       <div class="cover-txt">
         <p class="kicker">B2B Brake Disc Catalog ${PRICE_DATE.slice(0, 4)}</p>

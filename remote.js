@@ -85,6 +85,14 @@
     return r.ok ? r.data.status : (r.data && r.data.status) || null;
   }
 
+  // 비회원 주문·배송 조회: 주문번호 + 휴대폰 번호 → { ok, item } / { ok:false, reason }
+  async function lookupOrder(id, phone) {
+    const r = await post("/api/track", { action: "lookup", id, phone });
+    if (r.ok && r.data.item) return { ok: true, item: r.data.item };
+    const reason = r.status === 404 ? "not_found" : r.status === 429 ? "rate_limited" : r.status === 400 ? "bad_request" : r.status === 503 ? "not_configured" : "failed";
+    return { ok: false, reason };
+  }
+
   // ---------------- 상담사 채팅 ----------------
   let chatReady = null;
   function chatStart(chat) {
@@ -122,7 +130,7 @@
     ls.set("carib_ai_answers", r.data.answers.map((a) => ({ ...a, hits: (local.find((x) => x.id === a.id) || {}).hits || 0 })));
   }
 
-  window.Remote = { send, flush, keyed, newKey, syncStatus, cancelOrder, chatStart, chatPost, chatPull, loadAnswers };
+  window.Remote = { send, flush, keyed, newKey, syncStatus, cancelOrder, lookupOrder, chatStart, chatPost, chatPull, loadAnswers };
 
   const start = () => {
     flush();

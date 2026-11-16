@@ -35,6 +35,8 @@ python3 -m http.server 3000
 | `about.html` | 회사 소개 |
 | `login.html`, `signup.html`, `mypage.html` | 회원 |
 | `checkout.html` | 주문 |
+| `order.html` | 주문·배송 조회 (비회원: 주문번호 + 휴대폰 번호) |
+| `delivery.js` | 택배사 목록·배송조회 주소 (관리자·마이페이지·주문 조회 공용) |
 | `admin.html` | 관리자 |
 | `styles.css`, `cb.css` | 스타일 |
 | `catalog-data.js`, `data.js`, `data/` | 상품·차종 데이터 |

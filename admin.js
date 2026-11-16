@@ -11,7 +11,9 @@ const getReqs = () => store.get(REQUESTS_KEY, []);
 const getInqs = () => store.get(INQUIRIES_KEY, []).map((x, i) => ({ ...x, idx: i, status: x.status || "접수" }));
 const getOrders = () => store.get(ORDERS_KEY, []);
 const orderBadge = (s) => `<span class="status s${s === "취소" ? 4 : s === "배송 완료" ? 3 : s === "주문 접수" || s === "취소 요청" ? 1 : 0}">${esc(s)}</span>`;
-const COURIERS = ["CJ대한통운", "한진택배", "롯데택배", "로젠택배", "우체국택배", "경동택배", "직접 배송"];
+const COURIERS = window.Delivery ? Delivery.names : ["CJ대한통운", "한진택배", "롯데택배", "로젠택배", "우체국택배", "경동택배", "직접 배송"];
+// 송장번호를 넣으면 이 단계까지는 자동으로 "배송 중"으로 바꿈 (저장 전 화면에서 바로 보임)
+const BEFORE_SHIP = ["주문 접수", "적용 확인", "입금 확인", "출고 준비"];
 
 // 상담사가 아직 답하지 않은 고객 메시지 수 (마지막 상담사 답변 이후)
 function unreadOf(c) {
@@ -207,13 +209,32 @@ function showOrder(id) {
       <label>상태 <select id="oSt">${ORDER_STATUS.map((s) => `<option ${s === o.status ? "selected" : ""}>${s}</option>`).join("")}</select></label>
       <label class="check"><input type="checkbox" id="oPaid" ${o.payment.paid ? "checked" : ""} /> 입금(결제) 확인</label>
       <label>택배사 <select id="oCourier"><option value="">선택</option>${COURIERS.map((c) => `<option ${c === o.courier ? "selected" : ""}>${c}</option>`).join("")}</select></label>
-      <label>송장번호 <input id="oTrack" value="${esc(o.tracking || "")}" inputmode="numeric" /></label>
+      <label>송장번호 <input id="oTrack" value="${esc(o.tracking || "")}" inputmode="numeric" placeholder="숫자만 (하이픈 없이)" /></label>
+      <p class="full ord-track-help" id="oTrackHelp"></p>
       <label class="full">담당자 메모 <input id="oMemo" value="${esc(o.memo || "")}" placeholder="적용 확인 결과, 최종 금액 안내 기록 등" /></label>
       <button class="btn btn-primary" type="button" id="oSave">저장</button>
     </div></section>`;
+  // 송장번호 입력 도우미: 숫자만 남기고, 입력하면 상태를 "배송 중"으로, 고객이 누를 배송조회 주소를 미리 확인
+  const trackHelp = () => {
+    const courier = $("#oCourier").value, no = window.Delivery ? Delivery.clean($("#oTrack").value) : $("#oTrack").value.trim();
+    const url = window.Delivery ? Delivery.trackUrl(courier, no) : "";
+    let msg = "";
+    if (no && !courier) msg = "택배사를 선택해 주세요.";
+    else if (no && courier === "직접 배송") msg = "직접 배송은 송장번호 없이 저장해도 됩니다.";
+    else if (no && no.length < 9) msg = "송장번호가 짧습니다. 다시 확인해 주세요.";
+    else if (url) msg = `저장하면 고객 화면에 배송조회 버튼이 나타납니다. <a href="${esc(url)}" target="_blank" rel="noopener">조회 화면 미리 열기</a>`;
+    $("#oTrackHelp").innerHTML = msg;
+  };
+  $("#oTrack").addEventListener("input", () => {
+    if ($("#oTrack").value.trim() && BEFORE_SHIP.includes($("#oSt").value)) $("#oSt").value = "배송 중";
+    trackHelp();
+  });
+  $("#oCourier").addEventListener("change", trackHelp);
+  trackHelp();
   $("#oSave").onclick = () => {
     const all = getOrders(); const t = all.find((x) => x.id === id);
-    t.status = $("#oSt").value; t.payment.paid = $("#oPaid").checked; t.courier = $("#oCourier").value; t.tracking = $("#oTrack").value.trim(); t.memo = $("#oMemo").value; t.updatedAt = new Date().toISOString();
+    t.status = $("#oSt").value; t.payment.paid = $("#oPaid").checked; t.courier = $("#oCourier").value; t.tracking = window.Delivery ? Delivery.clean($("#oTrack").value) : $("#oTrack").value.trim();
+    if (t.status === "배송 중" && !t.shippedAt) t.shippedAt = new Date().toISOString(); t.memo = $("#oMemo").value; t.updatedAt = new Date().toISOString();
     store.set(ORDERS_KEY, all); renderAll(); showOrder(id);
   };
   $("#detail").scrollIntoView({ behavior: "smooth" });

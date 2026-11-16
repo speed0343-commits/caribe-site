@@ -3,6 +3,7 @@
 // - 주문할 때 브라우저가 만든 열쇠(_key)가 맞아야 조회·취소할 수 있습니다.
 // { action: "status", items: [{ id, key }] } → 상태·택배 정보
 // { action: "cancel", id, key }               → 입금 전·출고 전 주문만 "취소 요청"으로
+// { action: "lookup", id, phone }              → 비회원 주문·배송 조회 (주문번호 + 주문자 또는 받는 분 휴대폰 번호)
 // ============================================================
 "use strict";
 const { send, readBody, clientIp, originOk } = require("../lib/http");
@@ -13,7 +14,7 @@ const { notify, adminLink } = require("../lib/notify");
 const kindOf = (id) => (/^OR-/.test(id) ? "order" : /^CR-/.test(id) ? "request" : null);
 const canCancel = (o) => ["주문 접수", "적용 확인"].includes(o.status) && !(o.payment && o.payment.paid);
 const pub = (kind, r) => kind === "order"
-  ? { id: r.id, status: r.status, courier: r.courier || "", tracking: r.tracking || "", paid: !!(r.payment && r.payment.paid), updatedAt: r.updatedAt || "" }
+  ? { id: r.id, status: r.status, courier: r.courier || "", tracking: r.tracking || "", paid: !!(r.payment && r.payment.paid), shippedAt: r.shippedAt || "", updatedAt: r.updatedAt || "" }
   : { id: r.id, status: r.status, fee: (r.needs && r.needs.fee) || "", updatedAt: r.updatedAt || "" };
 
 module.exports = async function handler(req, res) {
@@ -35,6 +36,24 @@ module.exports = async function handler(req, res) {
         if (r && sameKey(it.key, r._key)) out.push(pub(kind, r));
       }
       return send(res, 200, { items: out });
+    }
+
+    if (body.action === "lookup") {
+      // 주문번호를 맞혀 보는 시도를 막기 위해 조회는 더 적게 허용 (IP당 10분에 15번)
+      if (await db.limited("lookup:" + clientIp(req), 15, 600)) return send(res, 429, { error: "rate_limited" });
+      const id = String(body.id || "").trim().toUpperCase();
+      const phone = String(body.phone || "").replace(/[^0-9]/g, "");
+      if (kindOf(id) !== "order" || phone.length < 9) return send(res, 400, { error: "bad_request" });
+      const o = await db.get("order", id);
+      const digits = (x) => String(x || "").replace(/[^0-9]/g, "");
+      const match = o && [o.orderer && o.orderer.phone, o.receiver && o.receiver.phone].some((p) => p && digits(p) === phone);
+      if (!match) return send(res, 404, { error: "not_found" });
+      const first = (o.items && o.items[0]) || {};
+      const n = (o.items || []).length;
+      return send(res, 200, { item: { ...pub("order", o), createdAt: o.createdAt || "",
+        // 상품은 요약만 (주소·연락처 같은 개인정보는 돌려주지 않음)
+        summary: `디스크 ${first.axle === "front" ? "앞" : "뒤"} ${first.brand || ""} ${first.pn || ""}${n > 1 ? ` 외 ${n - 1}건` : ""}`.replace(/\s+/g, " ").trim(),
+        total: (o.amounts && o.amounts.total) || 0 } });
     }
 
     if (body.action === "cancel") {

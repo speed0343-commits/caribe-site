@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko" class="cb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>주문·배송 조회 | 카리브무역</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&family=Nanum+Gothic:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="cb.css" />
+</head>
+<body data-page="order">
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="index.html" aria-label="카리브무역 홈"><img src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" /></a>
+      <nav>
+        <a href="index.html#top">부품 검색</a>
+        <a href="products.html">전체 상품</a>
+        <a href="technology.html">카오스 가공</a>
+        <a href="consult.html" class="keep">가공 상담</a>
+        <a href="about.html">회사 소개</a>
+        <a href="index.html#inquiry">문의</a>
+        <a class="nav-auth keep nav-login" href="login.html">로그인</a>
+        <a class="cart-btn" href="index.html?cart=1" aria-label="장바구니">장바구니 <b class="cart-count">0</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-band">
+    <div class="wrap">
+      <h1>주문·배송 조회</h1>
+      <p class="auth-band-sub">주문번호와 휴대폰 번호로 진행 상황과 배송 현황을 확인하실 수 있습니다.</p>
+    </div>
+  </section>
+
+  <main class="wrap auth-main">
+    <div class="auth-card order-lookup">
+      <p class="auth-msg hidden" id="memberNote" role="status"></p>
+      <form id="lookupForm" novalidate>
+        <label>주문번호
+          <input name="id" autocomplete="off" autocapitalize="characters" spellcheck="false" required placeholder="예: OR-20261116-1234" />
+        </label>
+        <label>휴대폰 번호
+          <input name="phone" type="tel" inputmode="numeric" autocomplete="tel" required placeholder="주문하실 때 입력하신 번호" />
+        </label>
+        <p class="auth-error" id="lookupError" role="alert" hidden></p>
+        <button class="btn btn-primary auth-submit" type="submit">조회하기</button>
+      </form>
+      <p class="auth-help">주문번호는 주문 완료 화면에서 확인하실 수 있습니다. 주문자 또는 받는 분의 휴대폰 번호로 조회됩니다.</p>
+      <div id="lookupResult" aria-live="polite"></div>
+    </div>
+
+    <div class="auth-card order-local hidden" id="localBox">
+      <h2>이 기기에서 주문하신 내역</h2>
+      <div id="localOrders"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo" src="assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+        <p>수입차 부품 유통과<br />브레이크 디스크 카오스 가공</p>
+      </div>
+      <div class="footer-col">
+        <b class="footer-h">바로가기</b>
+        <div class="footer-links">
+          <a href="about.html">회사 소개</a><a href="technology.html">카오스 가공</a>
+          <a href="index.html#top">부품 검색</a><a href="consult.html">가공 상담</a>
+          <a href="products.html">전체 상품</a><a href="index.html#inquiry">문의</a>
+          <a href="order.html">주문·배송 조회</a>
+        </div>
+      </div>
+      <div class="footer-col footer-cs">
+        <b class="footer-h">고객센터</b>
+        <a class="footer-tel" href="tel:01054593111">010-5459-3111</a>
+        <span>월~토 09:00 ~ 18:00</span>
+        <a class="footer-mail" href="mailto:caribetrading@naver.com">caribetrading@naver.com</a>
+        <a class="footer-btn" href="index.html#inquiry">문의하기</a>
+      </div>
+    </div>
+    <div class="wrap footer-legal">
+      <p><span>(주)카리브무역</span> <i>|</i> <span>대표 김철민</span> <i>|</i> <span>사업자등록번호 608-86-12959</span> <i>|</i> <span>통신판매업 신고 제2023-울산남구-1093호</span><br /><span>울산광역시 북구 진장로 16</span></p>
+      <p>© 2026 CARIBE TRADING. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site-nav.js"></script>
+  <script src="remote.js"></script>
+  <script src="auth.js"></script>
+  <script src="delivery.js"></script>
+  <script src="order.js"></script>
+</body>
+</html>

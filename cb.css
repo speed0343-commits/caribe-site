@@ -507,3 +507,23 @@
 /* 관리자 로그인 입력칸·버튼이 카드 밖으로 넘치던 문제 */
 .cb .admin-login input, .cb .admin-login button { width: 100%; max-width: 100%; box-sizing: border-box; }
 @media (max-width: 440px) { .cb .topbar:has(.admin-nav) .logo-tag { display: none; } .cb .admin-nav a, .cb .admin-nav a.keep { padding: 8px 6px; } }
+
+/* ---------- 배송조회 (마이페이지 · 주문·배송 조회 · 관리자) ---------- */
+.cb .my-track { align-items: center; gap: 8px 12px; padding: 12px 14px; margin: 12px 0; background: #f4f8f6; border-radius: 14px; }
+.cb .my-track b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 15px; color: #1f2422; }
+.cb .my-track .track-btn { min-height: 40px; padding: 0 18px; font-size: 14px; margin-left: auto; }
+.cb .my-track .track-alt { font-size: 13px; }
+.cb .my-track.muted { background: transparent; padding: 0; }
+.cb .my-track.muted .track-btn { display: none; }
+@media (max-width: 480px) { .cb .my-track .track-btn { margin-left: 0; flex: 1 1 100%; } }
+.cb .ord-track-help { margin: -4px 0 0; font-size: 13px; color: #4b5651; min-height: 1em; }
+.cb .ord-track-help a { color: #0b6e4f; font-weight: 700; }
+/* 주문·배송 조회 페이지 */
+.cb .order-lookup, .cb .order-local { max-width: 640px; }
+.cb .order-local { margin-top: 20px; }
+.cb .order-local h2 { margin: 0 0 8px; font-size: 20px; }
+.cb .order-card { padding: 18px 0; border-top: 1px solid #d3ddd8; }
+.cb #lookupResult .order-card { margin-top: 18px; border-top: 2px solid #1f2422; }
+.cb .order-card header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cb .order-card .my-id { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; }
+.cb .order-card .order-what { margin: 6px 0 14px; font-size: 15px; }

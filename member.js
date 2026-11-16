@@ -161,7 +161,7 @@
         "적용 확인": "적용 확인이 완료되었습니다. 안내해 드린 계좌로 입금해 주세요.",
         "입금 확인": "입금이 확인되었습니다. 출고를 준비하고 있습니다.",
         "출고 준비": "상품을 포장하고 있습니다. 가공 상품은 가공을 마친 뒤 출고됩니다.",
-        "배송 중": "상품이 택배로 배송 중입니다. 아래 송장번호로 배송 조회를 하실 수 있습니다.",
+        "배송 중": "상품이 택배로 배송 중입니다. 아래 배송조회 버튼을 누르시면 택배사 화면에서 현재 위치를 확인하실 수 있습니다.",
         "배송 완료": "배송이 완료되었습니다. 이용해 주셔서 감사합니다.",
         "취소 요청": "취소 요청이 접수되었습니다. 담당자가 확인 후 처리해 드리겠습니다.",
         "취소": "취소된 주문입니다.",
@@ -186,9 +186,9 @@
           ["배송지", `(${o.receiver.zip}) ${o.receiver.addr1} ${o.receiver.addr2}${o.receiver.memo ? "\n메모: " + o.receiver.memo : ""}`],
           o.vin ? ["차대번호", o.vin] : null,
         ].filter(Boolean);
-        const track = o.tracking
+        const track = window.Delivery ? Delivery.trackHtml(o, esc) : (o.tracking
           ? `<div class="my-track"><span>${esc(o.courier || "택배")} 송장번호</span><b>${esc(o.tracking)}</b><button type="button" class="link-plain" data-copy="${esc(o.tracking)}">복사</button></div>`
-          : `<div class="my-track muted"><span>송장번호</span><b>출고 후 안내</b></div>`;
+          : `<div class="my-track muted"><span>송장번호</span><b>출고 후 안내</b></div>`);
         const cancel = canCancel(o)
           ? `<div class="my-cancel"><button type="button" class="btn btn-ghost danger" data-cancel="${esc(o.id)}">주문 취소 요청</button><span class="small muted">입금 전 주문만 취소 요청하실 수 있습니다.</span></div>` : "";
         return `<li><details${idx === 0 ? " open" : ""}><summary><span class="my-id">${esc(o.id)}</span><span class="my-what">${esc(what)}</span><span class="my-date">${esc(day(o.createdAt))}</span>${obadge(o.status)}</summary>

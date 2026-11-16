@@ -231,7 +231,7 @@
       </table>
       <p class="co-note">궁금하신 점은 010-5459-3111로 전화 주세요.</p>
       <div class="co-done-actions">
-        ${isMember ? '<a class="btn btn-primary" href="mypage.html">마이페이지에서 주문 보기</a>' : '<span class="co-note">비회원 주문은 주문번호와 연락처를 알려 주시면 담당자가 확인해 드립니다.</span>'}
+        ${isMember ? '<a class="btn btn-primary" href="mypage.html">마이페이지에서 주문 보기</a>' : `<a class="btn btn-primary" href="order.html?id=${encodeURIComponent(o.id)}">주문·배송 조회</a><span class="co-note">비회원 주문은 주문번호와 휴대폰 번호로 진행 상황과 배송 현황을 확인하실 수 있습니다.</span>`}
         <a class="btn btn-ghost" href="index.html">쇼핑 계속하기</a>
       </div>`;
     window.scrollTo(0, 0);

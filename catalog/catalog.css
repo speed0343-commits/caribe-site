@@ -374,3 +374,11 @@ body.editing [data-ek].edited { background: #fff2b3; }
 .as-table th, .as-table td { padding-top: 1.6mm; padding-bottom: 1.6mm; }
 .page.aspage .callout { margin-top: 5mm; font-size: 8.4pt; }
 .terms.disc b { color: var(--em-2); }
+/* 휴대폰: 위쪽 막대가 화면을 많이 가리지 않게 — 수정 안내 막대는 함께 스크롤 */
+@media screen and (max-width: 640px) {
+  .cat-bar { padding: 8px 12px; gap: 8px; }
+  .cat-bar-home { font-size: 13px; }
+  .cat-bar-save { flex-basis: 100%; order: 3; font-size: 11px; }
+  .ed-bar { position: static; padding: 8px 12px; gap: 6px; font-size: 12px; }
+  .ed-bar span { min-width: 0; flex-basis: 100%; }
+}

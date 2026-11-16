@@ -335,3 +335,33 @@ body.editing [data-ek].edited { background: #fff2b3; }
 .cover-brand { display: inline-flex; align-self: flex-start; align-items: center; gap: 5.5mm; }
 .co-name { font-size: 14pt; font-weight: 700; color: #eef2f7; letter-spacing: .42em; padding-left: .42em; text-align: center; }
 .back-in .co-name { font-size: 12.5pt; }
+/* ---------- A/S · 교환·반품 ---------- */
+.as-table tbody th { white-space: nowrap; width: 62mm; }
+.as-table td b { color: var(--em-2); }
+.terms { margin: 0; padding-left: 6mm; font-size: 9.2pt; line-height: 1.7; display: grid; gap: 2.4mm; }
+.terms li::marker { font-family: var(--mono); font-weight: 600; color: var(--em); }
+.terms b { color: #b3261e; }
+.steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+.steps-row li { padding-bottom: 0; }
+.steps-row li::after { display: none; }
+/* ---------- 품번 색인 ---------- */
+.pn-wrap { position: absolute; inset: 0; overflow: hidden; }
+.pn-table th, .pn-table td { padding: 1.15mm 1.6mm; font-size: 7.4pt; white-space: nowrap; }
+.pn-table thead th { font-size: 7pt; }
+.pn-table td.m { font-family: var(--mono); font-weight: 500; }
+.pn-table td.b { font-weight: 600; color: var(--em-2); }
+.pn-table .c { text-align: center; }
+.pn-table td.fitc { color: var(--iron); max-width: 46mm; overflow: hidden; text-overflow: ellipsis; }
+.pn-table tbody tr:nth-child(even) td { background: var(--tint); }
+/* ---------- 뒤표지 QR ---------- */
+.back-bottom { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; }
+.back-bottom .back-disc { margin: 0; }
+.qr-box { display: flex; align-items: center; gap: 5mm; margin-bottom: 4mm; }
+.qr-box img { width: 30mm; height: 30mm; background: #fff; padding: 2.4mm; border-radius: 2mm; box-sizing: content-box; }
+.qr-box span { display: block; font-size: 8.5pt; color: var(--on-dark-2); }
+.qr-box b { display: block; font-size: 15pt; font-weight: 800; margin: .6mm 0; letter-spacing: .01em; }
+.qr-box small { font-size: 8.5pt; color: var(--on-dark); }
+/* 목차 항목이 늘어 간격 줄임 */
+.toc { margin-top: 4.5mm; padding: 4mm 5mm 3mm; }
+.toc li { padding: .9mm 0; font-size: 8.4pt; }
+.side h3 { margin-top: 4.5mm; }

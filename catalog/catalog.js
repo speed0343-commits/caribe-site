@@ -180,6 +180,39 @@ function build() {
       </ol>
     </div>`;
 
+  // ---------------- 3-1. A/S · 교환·반품 안내 (회사 제공 유의사항 원문) ----------------
+  const pAS = page("terms", "WARRANTY & RETURNS", "A/S · 교환·반품 안내");
+  toc.push(["A/S · 교환·반품 안내", pageCount]);
+  body(pAS).innerHTML = `
+    <p class="kicker">Warranty &amp; returns</p>
+    <h1 class="title">A/S · 교환·반품 안내</h1>
+    <p class="lead">발주 전 아래 유의사항을 반드시 확인해 주시기 바랍니다. 주문 확정 이후에는 어떠한 사유로도 취소·반품·보류가 불가합니다.</p>
+    <h2 class="sub">품목별 A/S 기간</h2>
+    <table class="ptable as-table">
+      <thead><tr><th>구분</th><th>A/S 기간 · 기준</th></tr></thead>
+      <tbody>
+        <tr><th>애프터마켓 브랜드 제품</th><td><b>구매일로부터 3개월</b></td></tr>
+        <tr><th>콘덴서 · 콤프레셔 · 발전기 · 스타터</th><td><b>구매일로부터 6개월 또는 10,000 km</b> 중 선도래 기준</td></tr>
+        <tr><th>정품 부품</th><td>딜러사 공급 조건 및 서비스 매뉴얼 기준에 따라 <b>A/S 불가</b></td></tr>
+        <tr><th>전자제품</th><td><b>초기 불량에 한하여</b> A/S 가능 (그 외 사유는 제한)</td></tr>
+      </tbody>
+    </table>
+    <h2 class="sub" style="margin-top:7mm">유의사항</h2>
+    <ol class="terms">
+      <li><b>A/S 기준:</b> 애프터마켓 브랜드 제품의 A/S 기간은 구매일로부터 3개월입니다.</li>
+      <li>콘덴서, 콤프레셔, 발전기, 스타터 제품의 A/S 기간은 구매일로부터 6개월 또는 10,000km 중 선도래 기준으로 적용됩니다.</li>
+      <li><b>정품 부품</b>은 딜러사 공급 조건 및 서비스 매뉴얼 기준에 따라 A/S가 불가합니다. 전자제품은 초기 불량에 한하여 A/S가 가능하며, 그 외 사유에 대해서는 A/S가 제한됩니다. 또한, 일부 품목은 사전 고지 후 판매됩니다.</li>
+      <li>모든 불량 및 A/S 요청은 명확한 증빙자료(사진, 영상, 진단서 등) 제출 시에만 검토되며, 증빙자료가 없는 경우 어떠한 사유로도 교환·반품·환불은 불가합니다.</li>
+      <li>단순 오진, 작업 오류, 소비자 노쇼(No-show), 고객 변심 등으로 인한 발주 취소·보류·변경은 일절 불가합니다. 주문 확정 이후에는 어떠한 사유로도 제품 취소·반품·보류가 불가하오니 상기 내용을 충분히 숙지 및 확인 후 주문하여 주시기 바랍니다.</li>
+    </ol>
+    <h2 class="sub" style="margin-top:7mm">A/S 접수 방법</h2>
+    <ol class="steps steps-row">
+      <li><b>증빙자료 준비</b><span>불량 부위 사진·영상, 진단서 등</span></li>
+      <li><b>접수</b><span>전화·문자·이메일로 구매일, 품번, 차대번호와 함께 접수</span></li>
+      <li><b>검토 · 안내</b><span>증빙자료 검토 후 처리 방법 안내</span></li>
+    </ol>
+    <div class="callout">A/S·교환 문의 <b>T. ${TEL}</b> · <b>E. ${MAIL}</b> · 영업 시간 월~토 09:00 – 18:00</div>`;
+
   // ---------------- 4. 카오스 가공 ----------------
   const pChaos = page("", "CHAOS MACHINING", "카오스 가공");
   toc.push(["카오스 가공", pageCount]);
@@ -479,6 +512,28 @@ function build() {
   });
   toc.push(["차종별 색인", firstIndexPage]);
 
+  // ---------------- 6-1. 품번 색인 · 교차 참조 ----------------
+  // OEM 품번 순. BREMBO 품번은 적용 차종·규격 출처(Spareto 브렘보 제품 페이지) 주소에서 읽음: .../brembo-brake-disc/09-d533-13 → 09.D533.13
+  const bremboNo = (p) => { const m = String(p.src || "").match(/brembo-brake-disc\/([0-9a-z]+)-([0-9a-z]+)-([0-9a-z]+)\/?$/i); return m ? `${m[1]}.${m[2]}.${m[3]}`.toUpperCase() : ""; };
+  const byPn = LIST.slice().sort((a, b) => a.pn.localeCompare(b.pn, "en", { numeric: true }));
+  const firstPnPage = pageCount + 1;
+  const pnHead = `<thead><tr><th>OEM 품번</th><th class="c">제품 번호</th><th class="c">쪽</th><th class="c">위치</th><th class="r">외경 × 두께</th><th>COLUMN 품번</th><th>BREMBO 품번</th><th>주요 적용 차종</th></tr></thead>`;
+  const pnRow = (p) => `<tr><td class="m b">${esc(p.pn)}</td><td class="c m">${pad(p._no)}</td><td class="c m">${pad(p._page)}</td><td class="c">${p.axle === "front" ? "전륜" : "후륜"}</td><td class="r m">${esc(p.dia || "?")} × ${esc(p.thk || "?")}</td><td class="m">${esc(p.col || "–")}</td><td class="m">${esc(bremboNo(p) || "–")}</td><td class="fitc">${esc(p._makes.slice(0, 2).map(makeKo).join(" · "))} ${esc([...p._tree.get(p._makes[0]).keys()].slice(0, 2).join(", "))}</td></tr>`;
+  let pnBody = null;
+  const newPnPage = () => {
+    const el = page("", "PART NUMBER INDEX", "품번 색인 · 교차 참조 · OEM 품번 순");
+    body(el).innerHTML = `<div class="pn-wrap"><table class="ptable pn-table">${pnHead}<tbody></tbody></table></div>`;
+    pnBody = el.querySelector(".pn-table tbody");
+    return el.querySelector(".pn-wrap");
+  };
+  let pnWrap = newPnPage();
+  byPn.forEach((p) => {
+    pnBody.insertAdjacentHTML("beforeend", pnRow(p));
+    if (pnWrap.scrollHeight > pnWrap.clientHeight + 1) { pnBody.lastElementChild.remove(); pnWrap = newPnPage(); pnBody.insertAdjacentHTML("beforeend", pnRow(p)); }
+  });
+  pnWrap.insertAdjacentHTML("beforeend", `<p class="note" style="margin-top:2mm">BREMBO 품번은 동일 규격 대응 품번(참고용)입니다. 발주 시에는 OEM 품번과 차대번호로 적용 여부를 확인합니다.</p>`);
+  toc.push(["품번 색인 · 교차 참조", firstPnPage]);
+
   // ---------------- 7. 뒤표지 ----------------
   page("back").innerHTML = `<div class="back-in">
       <div class="cover-brand"><img class="cover-logo" src="brand/logo-silver.png" alt="CARIBE TRADING" /><span class="co-name">주식회사 카리브무역</span></div>
@@ -490,7 +545,10 @@ function build() {
         <div><span>이메일</span><b>${MAIL}</b></div>
         <div><span>본사</span><b>${ADDR}</b></div>
       </div>
-      <img class="back-disc" src="${ROOT}images/brake-discs/hero-disc-a.png" alt="" />
+      <div class="back-bottom">
+        <div class="qr-box"><img src="brand/qr-site.svg" alt="카리브무역 홈페이지 QR 코드" /><div><span>홈페이지 바로가기</span><b>caribetrading.co.kr</b><small>차대번호·품번 검색 · 상담</small></div></div>
+        <img class="back-disc" src="${ROOT}images/brake-discs/hero-disc-a.png" alt="" />
+      </div>
       <div class="legal">주식회사 카리브무역 | 대표 김철민 | 사업자등록번호 608-86-12959 | 통신판매업 신고 제2023-울산남구-1093호<br />
         가격 기준일 ${PRICE_DATE} · 부가세 포함 · 1세트(2매) 기준. 가격 및 적용 차종은 사전 예고 없이 변경될 수 있으므로 주문 전 확인하시기 바랍니다.<br />
         제품 이미지는 대표 이미지로, 품번별 실제 외관(햇 높이, 볼트 홀 수 등)과 다를 수 있습니다.<br />

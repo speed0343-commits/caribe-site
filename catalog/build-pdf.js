@@ -17,6 +17,9 @@ async function makePdf(url, out = OUT) {
     await page.waitForSelector("body[data-ready='1']", { timeout: 60000 });
     // 사진이 다 들어올 때까지
     await page.evaluate(() => Promise.all([...document.images].map((im) => im.complete ? 0 : new Promise((r) => { im.onload = im.onerror = r; }))));
+    // 넘치는 쪽 경고 (넘친 글자는 PDF에서 잘림)
+    const over = await page.$$eval(".page.overflow", (x) => x.map((e) => e.querySelector(".pg-foot b")?.textContent || (e.classList.contains("cover") ? "표지" : "뒤표지")));
+    if (over.length) console.warn("주의: 내용이 넘치는 쪽 →", over.join(", "), "(글을 줄이거나 간격을 조정하세요)");
     const buf = await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
     fs.writeFileSync(out, buf);
     return buf;

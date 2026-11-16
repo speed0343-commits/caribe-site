@@ -11,6 +11,8 @@ A4 인쇄·PDF용 브레이크 디스크 카탈로그입니다. 홈페이지 메
 | `editor.js` | 화면에서 글자 고치기, 수정 내용 저장 |
 | `edits.json` | 고친 내용 (수정하면 생김) |
 | `build-pdf.js` | PDF 만들기 |
+| `make-bundle.py` | 다른 사람에게 넘길 수정용 묶음(zip) 만들기 → `catalog/dist/` |
+| `CLAUDE.md` | 다른 Claude 가 이어서 작업할 때 읽는 안내 (구조·규칙·작업 방법) |
 | `photos/` | 제품 사진. `base-disc.png` 는 모든 카드에 쓰는 대표 사진 |
 
 읽어 오는 데이터: `../catalog-data.js`(상품·차종·가격), `../data/research-papers.js`, `../data/literature-measurements.js`, `../data/test-plan.js`(연구 자료)
@@ -41,3 +43,11 @@ node catalog/server.js
 1. 흰 배경·정면 사진을 `photos/` 에 넣습니다 (예: `0004231812.jpg`).
 2. `photos/photos.js` 에 `"0004231812": "0004231812.jpg",` 한 줄을 추가합니다.
 3. 그 품번 카드의 '대표 사진' 표시가 사라지고 실제 사진이 들어갑니다.
+
+## 다른 사람(다른 Claude 사용자)에게 넘기기
+
+```bash
+python3 catalog/make-bundle.py
+```
+
+`catalog/dist/caribe-catalog-source.zip` 을 보내면 됩니다. 받은 사람은 압축을 풀어 Claude 에 올리고 "catalog/CLAUDE.md 를 읽고 카탈로그를 수정해 줘"라고 요청하면 됩니다. 저장소 접근 권한이 없어도 됩니다.

@@ -309,3 +309,25 @@ body.editing [data-ek].edited { background: #fff2b3; }
 .ed-flag { position: absolute; top: 2mm; left: 50%; transform: translateX(-50%); z-index: 5; background: #d93025; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
 .ed-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1b2422; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; z-index: 20; max-width: 90vw; }
 .ed-shared #edExport, .ed-shared .ed-import { display: none; }
+
+/* ---------- 회사명 표기 (로고 옆·아래) ---------- */
+.hd-brand { display: flex; align-items: center; gap: 2.6mm; }
+.hd-co { font-size: 8pt; font-weight: 800; color: var(--em); padding-left: 2.6mm; border-left: 1px solid var(--line); letter-spacing: .02em; line-height: 1; }
+.cover-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 2.4mm; position: relative; z-index: 1; }
+.co-name { font-size: 10.5pt; font-weight: 700; color: #dfe6ef; letter-spacing: .32em; padding-left: 1.5mm; }
+.back-in .co-name { font-size: 9.5pt; }
+.b2b-mark { position: absolute; top: 18mm; right: 16mm; z-index: 1; font-size: 8pt; font-weight: 800; letter-spacing: .08em; color: var(--glow); border: 1px solid rgba(143,192,242,.55); border-radius: 99px; padding: 1mm 3.4mm; }
+.order .ptable tbody th { white-space: nowrap; }
+.order .ways { margin-bottom: 5mm; }
+.order .way { padding: 3.4mm 4mm; }
+.order .howto { margin-top: 4mm; }
+.order .howto ol li { padding: .5mm 0; }
+.biz b em { display: table; margin: 0 0 1.2mm; }
+/* 회사 소개 쪽: 상태 표시를 제목 위 줄로 옮긴 만큼 간격 줄이기 */
+.biz { gap: 3mm; margin-bottom: 5.5mm; }
+.biz div { padding: 3.2mm 3.6mm; }
+.biz em { font-size: 6.6pt !important; }
+.strength li { padding: 2mm 0; }
+.about-grid .lead { margin-bottom: 5.5mm; }
+.strength { margin-bottom: 0; }
+.strength li { padding: 1.7mm 0; }

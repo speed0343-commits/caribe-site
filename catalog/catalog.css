@@ -300,3 +300,4 @@ body.editing [data-ek].edited, [data-ek].edited.show { background: #fff2b3; }
 .page.overflow { outline: 3px solid #d93025; outline-offset: -3px; }
 .ed-flag { position: absolute; top: 2mm; left: 50%; transform: translateX(-50%); z-index: 5; background: #d93025; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
 .ed-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1b2422; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; z-index: 20; max-width: 90vw; }
+.ed-shared #edExport, .ed-shared .ed-import { display: none; }

@@ -31,6 +31,7 @@ node catalog/server.js
    Playwright 가 없으면 인쇄 창이 열리니 'PDF로 저장'(여백 없음, 배경 그래픽 켬)을 고르세요.
 
 - `edits.json` 을 커밋하면 다른 컴퓨터에서도 같은 수정 내용이 보입니다.
+- claude.ai 에 게시한 미리보기 페이지에서 고치면 그 페이지의 공유 저장소에 저장됩니다. Claude 에게 "PDF 만들어줘"라고 하면 그 수정 내용을 edits.json 으로 옮겨 PDF를 만듭니다 (게시한 페이지에서는 인쇄·내려받기가 막혀 있음).
 - 서버 없이 파일만 열었을 때는 수정 내용이 그 브라우저에만 저장됩니다. **수정 내용 파일 받기**로 받은 `edits.json` 을 catalog 폴더에 넣으세요.
 - 상품 데이터(`catalog-data.js`)가 바뀌어 원래 글자가 달라진 칸은 예전 수정을 적용하지 않고 새 데이터를 보여줍니다.
 - 명령으로 PDF만 만들기: `node catalog/build-pdf.js` (Playwright 필요: `npm i -D playwright` 후 `npx playwright install chromium`)

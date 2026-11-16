@@ -15,6 +15,7 @@
 function build() {
   "use strict";
   const book = document.getElementById("book");
+  const ROOT = window.CATALOG_ROOT ?? "../"; // 저장소 파일 위치 (게시용 미리보기 페이지에서는 "")
   const PER_PAGE = 6;
   const HOT = 20; // 판매장부 기준 이 수량 이상이면 '많이 찾는 품번'
   const TEL = "010-5459-3111", MAIL = "caribetrading@naver.com", ADDR = "울산광역시 북구 진장로 16";
@@ -53,7 +54,7 @@ function build() {
     const el = document.createElement("section");
     el.className = "page " + (cls || "");
     if (sec) {
-      el.innerHTML = `<header class="pg-head"><img src="../assets/logo-navy.png" alt="CARIBE TRADING" /><span class="sec">${sec}${sub ? `<small>${sub}</small>` : ""}</span></header>
+      el.innerHTML = `<header class="pg-head"><img src="${ROOT}assets/logo-navy.png" alt="CARIBE TRADING" /><span class="sec">${sec}${sub ? `<small>${sub}</small>` : ""}</span></header>
         <div class="pg-body"></div>
         <footer class="pg-foot"><span>(주)카리브무역 · ${TEL} · ${MAIL}</span><b>${pad(pageCount)}</b></footer>`;
     }
@@ -67,8 +68,8 @@ function build() {
   const modelSet = new Set(), bodySet = new Set();
   LIST.forEach((p) => p.rows.forEach((r) => { modelSet.add(r.make + "|" + r.group); bodySet.add(r.make + "|" + r.body); }));
   page("cover").innerHTML = `<div class="cover-in">
-      <img class="cover-logo" src="../assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
-      <img class="cover-disc" src="../images/brake-discs/hero-disc-b.png" alt="" />
+      <img class="cover-logo" src="${ROOT}assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+      <img class="cover-disc" src="${ROOT}images/brake-discs/hero-disc-b.png" alt="" />
       <div class="cover-txt">
         <p class="kicker">Brake Disc Catalog ${PRICE_DATE.slice(0, 4)}</p>
         <h1>수입차<br />브레이크 디스크<br />&amp; 카오스 가공</h1>
@@ -188,10 +189,10 @@ function build() {
     <h1 class="title">휠 사이로 보이는 디스크가 달라집니다</h1>
     <p class="lead">브레이크 디스크 마찰면에 홈 패턴을 새기는 카오스 가공. 사선, A, B 세 가지 타입 가운데 휠에 어울리는 것을 고르면 차량 규격에 맞춰 가공해 보냅니다.</p>
     <div class="ctypes">
-      <figure class="base"><img src="../assets/chaos-before.jpg" alt="가공 전 디스크" /><figcaption><b>가공 전</b>홈이 없는 일반 디스크</figcaption></figure>
-      <figure><img src="../assets/chaos-diag.jpg" alt="사선 타입" /><figcaption><b>사선 타입</b>같은 간격의 직선 홈. 깔끔하고 무난합니다.</figcaption></figure>
-      <figure><img src="../assets/chaos-type-a.jpg" alt="A 타입" /><figcaption><b>A 타입</b>제각각인 곡선 홈. 개성이 강합니다.</figcaption></figure>
-      <figure><img src="../assets/chaos-type-b.jpg" alt="B 타입" /><figcaption><b>B 타입</b>한 방향 V자 홈. 회전 방향이 있습니다.</figcaption></figure>
+      <figure class="base"><img src="${ROOT}assets/chaos-before.jpg" alt="가공 전 디스크" /><figcaption><b>가공 전</b>홈이 없는 일반 디스크</figcaption></figure>
+      <figure><img src="${ROOT}assets/chaos-diag.jpg" alt="사선 타입" /><figcaption><b>사선 타입</b>같은 간격의 직선 홈. 깔끔하고 무난합니다.</figcaption></figure>
+      <figure><img src="${ROOT}assets/chaos-type-a.jpg" alt="A 타입" /><figcaption><b>A 타입</b>제각각인 곡선 홈. 개성이 강합니다.</figcaption></figure>
+      <figure><img src="${ROOT}assets/chaos-type-b.jpg" alt="B 타입" /><figcaption><b>B 타입</b>한 방향 V자 홈. 회전 방향이 있습니다.</figcaption></figure>
     </div>
     <div class="two">
       <div>
@@ -214,9 +215,9 @@ function build() {
       </div>
     </div>
     <div class="fitph">
-      <img src="../assets/fit-red-caliper.jpg" alt="빨간 캘리퍼와 가공 디스크" />
-      <img src="../assets/fit-yellow-caliper.jpg" alt="노란 캘리퍼와 가공 디스크" />
-      <img src="../assets/fit-installed.jpg" alt="차량에 장착한 가공 디스크" />
+      <img src="${ROOT}assets/fit-red-caliper.jpg" alt="빨간 캘리퍼와 가공 디스크" />
+      <img src="${ROOT}assets/fit-yellow-caliper.jpg" alt="노란 캘리퍼와 가공 디스크" />
+      <img src="${ROOT}assets/fit-installed.jpg" alt="차량에 장착한 가공 디스크" />
     </div>`;
 
   // ---------------- 4-1. 연구 자료 (외부 논문·특허 요약) ----------------
@@ -472,7 +473,7 @@ function build() {
 
   // ---------------- 7. 뒤표지 ----------------
   page("back").innerHTML = `<div class="back-in">
-      <img class="cover-logo" src="../assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
+      <img class="cover-logo" src="${ROOT}assets/logo-navy.png" alt="CARIBE TRADING 카리브무역" />
       <h2>차대번호만 알려 주세요.<br />맞는 디스크를 찾아 드립니다.</h2>
       <p>카탈로그에 없는 품번, 브레이크 외 부품, 카오스 가공 상담도 같은 연락처로 받습니다. 차대번호와 필요한 품목을 문자나 이메일로 보내 주시면 확인해 답해 드립니다.</p>
       <div class="contact">
@@ -481,7 +482,7 @@ function build() {
         <div><span>이메일</span><b>${MAIL}</b></div>
         <div><span>주소</span><b>${ADDR}</b></div>
       </div>
-      <img class="back-disc" src="../images/brake-discs/hero-disc-a.png" alt="" />
+      <img class="back-disc" src="${ROOT}images/brake-discs/hero-disc-a.png" alt="" />
       <div class="legal">(주)카리브무역 | 대표 김철민 | 사업자등록번호 608-86-12959 | 통신판매업 신고 제2023-울산남구-1093호<br />
         가격 기준일 ${PRICE_DATE} · VAT 포함 · 2장 1세트. 가격과 적용 차종은 사정에 따라 바뀔 수 있으니 주문 전에 확인해 주십시오.<br />
         제품 사진은 대표 이미지이며 품번별 실제 외관(햇 높이·볼트 구멍 수 등)은 다를 수 있습니다.<br />

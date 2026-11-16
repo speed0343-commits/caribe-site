@@ -4,6 +4,7 @@
 // - 수정 모드에서 글자가 있는 칸은 모두 눌러서 고칠 수 있습니다.
 // - 고친 내용은 칸마다 '열쇠'(쪽 이름 + 순서, 상품 카드는 품번 + 순서)로 저장합니다.
 //     · 카탈로그 서버(node catalog/server.js)로 열면 catalog/edits.json 파일에 저장 → PDF 만들기·커밋에 그대로 반영
+//     · claude.ai 에 게시한 미리보기 페이지로 열면 그 페이지의 공유 저장소(db, 'edits' 모음)에 저장 → Claude 가 읽어 edits.json 으로 옮기고 PDF 를 만듦
 //     · 그냥 열었으면 이 브라우저(localStorage)에만 저장 → '수정 내용 파일 받기'로 edits.json 을 받아 catalog 폴더에 넣으면 됨
 // - 상품·가격 데이터(catalog-data.js)가 바뀌어 칸 내용이 달라지면, 그 칸의 수정은 적용하지 않고 원래 내용을 보여줍니다.
 // ============================================================
@@ -13,6 +14,9 @@ window.CatalogEditor = (function () {
   const API = "api/";            // catalog/server.js 의 주소 (catalog/api/edits, catalog/api/pdf)
   let edits = { savedAt: "", text: {} }; // text[key] = { html: 고친 내용, orig: 원래 글자(바뀐 데이터 감지용) }
   let server = false;              // 카탈로그 서버로 열었는지
+  let db = null;                   // 게시한 미리보기 페이지의 공유 저장소 (claude.ai)
+  const dirty = new Set();         // db 모드: 저장할 칸 열쇠
+  const docId = (key) => key.replace(/[^A-Za-z0-9_\-.~:@+]/g, "_"); // db 문서 이름 규칙에 맞춤 (원래 열쇠는 key 칸에 보관)
   const $ = (id) => document.getElementById(id);
   const INLINE = /^(B|I|EM|SMALL|STRONG|SUP|SUB|BR|SPAN|CODE|A)$/;
 
@@ -80,7 +84,18 @@ window.CatalogEditor = (function () {
     const run = async () => {
       edits.savedAt = new Date().toISOString();
       try { localStorage.setItem(LS, JSON.stringify(edits)); } catch (e) {}
-      if (server) {
+      if (db) {
+        const keys = [...dirty]; dirty.clear();
+        try {
+          for (const k of keys) { // 문서 하나씩 차례로
+            const ref = db.collection("edits").doc(docId(k));
+            const e = edits.text[k];
+            if (e) await ref.set({ key: k, html: e.html, orig: e.orig, at: edits.savedAt });
+            else await ref.delete();
+          }
+          status(`저장됨 · 수정 ${count()}곳`);
+        } catch (e) { keys.forEach((k) => dirty.add(k)); status("저장 실패 — 잠시 뒤 다시 고치면 다시 저장합니다 (" + (e.code || e.message || e) + ")"); }
+      } else if (server) {
         try {
           const r = await fetch(API + "edits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(edits) });
           if (!r.ok) throw new Error(r.status);
@@ -121,6 +136,7 @@ window.CatalogEditor = (function () {
   }
   function onInput(el) {
     const key = el.dataset.ek;
+    dirty.add(key);
     if (el.innerHTML === el.dataset.orig) delete edits.text[key];
     else edits.text[key] = { html: el.innerHTML, orig: el.dataset.orig };
     el.classList.toggle("edited", !!edits.text[key]);
@@ -128,6 +144,15 @@ window.CatalogEditor = (function () {
     save();
   }
   function revert(el) { el.innerHTML = el.dataset.orig; onInput(el); }
+  // 확인 창 대신 '한 번 더 누르기' (게시한 페이지에서는 confirm() 이 항상 거절됨)
+  const armed = new WeakMap();
+  function twice(btn, msg) {
+    if (armed.get(btn)) { armed.delete(btn); btn.textContent = btn.dataset.label; return true; }
+    btn.dataset.label = btn.dataset.label || btn.textContent;
+    armed.set(btn, true); btn.textContent = msg;
+    setTimeout(() => { if (armed.get(btn)) { armed.delete(btn); btn.textContent = btn.dataset.label; } }, 4000);
+    return false;
+  }
   function toast(t, ms) {
     const d = document.createElement("div"); d.className = "ed-toast"; d.textContent = t; document.body.appendChild(d);
     setTimeout(() => d.remove(), ms || 3500);
@@ -152,7 +177,8 @@ window.CatalogEditor = (function () {
     $("edToggle").addEventListener("click", () => setEditing(!document.body.classList.contains("editing")));
     $("edRevertOne").addEventListener("click", () => { if (current) revert(current); });
     $("edRevertAll").addEventListener("click", () => {
-      if (!count() || !confirm(`수정한 ${count()}곳을 모두 원래대로 돌릴까요?`)) return;
+      if (!count() || !twice($("edRevertAll"), `한 번 더 누르면 ${count()}곳을 되돌립니다`)) return;
+      Object.keys(edits.text).forEach((k) => dirty.add(k));
       edits.text = {}; apply(); checkOverflow(); save(true);
     });
     $("edExport").addEventListener("click", () => {
@@ -178,7 +204,12 @@ window.CatalogEditor = (function () {
   // ---------------- PDF 만들기 ----------------
   async function makePdf() {
     if (document.body.classList.contains("editing")) setEditing(false);
-    if (checkOverflow() && !confirm("넘치는 쪽이 있습니다 (빨간 테두리). 넘친 글자는 PDF에서 잘립니다. 그래도 만들까요?")) return;
+    if (db) { // 게시한 페이지에서는 인쇄·내려받기가 막혀 있음
+      await save(true);
+      toast(`수정 ${count()}곳이 저장되어 있습니다. Claude 에게 "PDF 만들어줘"라고 말하면 이 수정 내용으로 PDF를 만들어 드립니다.${checkOverflow() ? " (빨간 테두리 쪽은 넘친 글자가 잘립니다)" : ""}`, 8000);
+      return;
+    }
+    if (checkOverflow() && !twice($("edPdf"), "넘치는 쪽 있음 — 한 번 더 누르면 만듦")) return;
     if (!server) { window.print(); return; } // 브라우저 인쇄 창 → 'PDF로 저장' (여백 없음, 배경 그래픽 켬)
     const btn = $("edPdf"); btn.disabled = true; btn.textContent = "PDF 만드는 중…";
     try {
@@ -199,6 +230,23 @@ window.CatalogEditor = (function () {
   async function init() {
     assignKeys();
     try { server = (await fetch(API + "ping", { cache: "no-store" })).ok; } catch (e) { server = false; }
+    if (!server && window.claude && typeof window.claude.use === "function") {
+      db = await Promise.race([window.claude.use("db").catch(() => null), new Promise((r) => setTimeout(() => r(null), 10000))]);
+    }
+    if (db) {
+      document.body.classList.add("ed-shared");
+      try {
+        const snap = await Promise.race([db.collection("edits").get(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 10000))]);
+        const text = {};
+        snap.docs.forEach((d) => { const v = d.data(); if (v && v.key && typeof v.html === "string") text[v.key] = { html: v.html, orig: v.orig || "" }; });
+        edits = { savedAt: "", text };
+      } catch (e) { toast("저장된 수정 내용을 불러오지 못했습니다. 새로 고친 내용은 저장됩니다.", 6000); }
+      const r = apply(); bind();
+      status(count() ? `수정 ${count()}곳 적용` : "수정 내용은 이 페이지에 저장됩니다");
+      $("edPdf").textContent = "PDF 요청";
+      if (r.stale) toast(`상품 데이터가 바뀐 ${r.stale}곳은 예전 수정을 적용하지 않았습니다.`, 6000);
+      return;
+    }
     const file = await loadFile(), local = loadLocal();
     // 서버로 열면 파일이 기준, 아니면 더 최근에 저장한 쪽
     const pick = server ? (file || local) : [file, local].filter(Boolean).sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)))[0];

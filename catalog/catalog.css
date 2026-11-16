@@ -331,3 +331,7 @@ body.editing [data-ek].edited { background: #fff2b3; }
 .about-grid .lead { margin-bottom: 5.5mm; }
 .strength { margin-bottom: 0; }
 .strength li { padding: 1.7mm 0; }
+/* 로고 아래 회사명: 로고 가운데 정렬, 간격·크기 키움 */
+.cover-brand { display: inline-flex; align-self: flex-start; align-items: center; gap: 5.5mm; }
+.co-name { font-size: 14pt; font-weight: 700; color: #eef2f7; letter-spacing: .42em; padding-left: .42em; text-align: center; }
+.back-in .co-name { font-size: 12.5pt; }

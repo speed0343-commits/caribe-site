@@ -429,47 +429,54 @@ function build() {
     if (!r.to) e.open = true; else if (r.to > e.to) e.to = r.to;
   }));
   const nums = (set) => [...set].sort((a, b) => a - b).map(pad).join(" ");
-  const items = [];
-  [...idx.keys()].sort((a, b) => makeOrder(a) - makeOrder(b)).forEach((m) => {
-    const groups = idx.get(m);
-    items.push({ head: 2, html: `<div class="ix-make"><span>${esc(makeKo(m))}</span><small>${esc(m)}</small></div>` });
+  // 제조사별로 쪽을 나눔. 행이 적은 제조사(MINOR 미만)는 '기타 제조사' 쪽에 모음.
+  const MINOR = 10;
+  const makeItems = (m) => {
+    const groups = idx.get(m), out = [{ head: 2, html: `<div class="ix-make"><span>${esc(makeKo(m))}</span><small>${esc(m)}</small></div>` }];
     [...groups.keys()].sort((a, b) => a.localeCompare(b, "en", { numeric: true })).forEach((g) => {
-      items.push({ head: 1, html: `<div class="ix-grp">${esc(g)}</div>` });
+      out.push({ head: 1, html: `<div class="ix-grp">${esc(g)}</div>` });
       [...groups.get(g).entries()].sort((a, b) => a[1].from.localeCompare(b[1].from)).forEach(([bd, e]) => {
         const yrs = `${e.from === "9999" ? "?" : e.from} ~ ${e.open ? "현재" : e.to || "?"}`;
-        items.push({ head: 0, html: `<div class="ix-row"><span class="nm"><b>${esc(bd)}</b><small>${yrs}</small></span><span class="n">${nums(e.front)}</span><span class="n">${nums(e.rear)}</span></div>` });
+        out.push({ head: 0, html: `<div class="ix-row"><span class="nm"><b>${esc(bd)}</b><small>${yrs}</small></span><span class="n">${nums(e.front)}</span><span class="n">${nums(e.rear)}</span></div>` });
       });
     });
-  });
+    return out;
+  };
+  const rowCount = (m) => [...idx.get(m).values()].reduce((n, b) => n + b.size, 0);
+  const makesSorted = [...idx.keys()].sort((a, b) => makeOrder(a) - makeOrder(b));
+  const sections = makesSorted.filter((m) => rowCount(m) >= MINOR).map((m) => ({ title: makeKo(m) === m ? m : `${makeKo(m)} · ${m}`, items: makeItems(m) }));
+  const minor = makesSorted.filter((m) => rowCount(m) < MINOR);
+  if (minor.length) sections.push({ title: "기타 제조사", items: minor.flatMap(makeItems) });
+
   const firstIndexPage = pageCount + 1;
   const colHead = `<div class="ix-head"><span>모델 · 차체(섀시코드) · 생산 기간</span><span>전륜</span><span>후륜</span></div>`;
-  let cols = [], ci = 2;
-  const newIndexPage = () => {
-    const el = page("", "VEHICLE INDEX", "차종별 색인 · 숫자는 제품 번호");
-    body(el).innerHTML = `<div class="ix-cols"><div class="ix-col">${colHead}</div><div class="ix-col">${colHead}</div></div>`;
-    cols = [...el.querySelectorAll(".ix-col")]; ci = 0;
-  };
   const over = (c) => c.scrollHeight > c.clientHeight + 1;
-  items.forEach((it, k) => {
-    if (ci > 1) newIndexPage();
-    let col = cols[ci];
-    col.insertAdjacentHTML("beforeend", it.html);
-    if (!over(col)) return;
-    // 넘치면: 이 항목과, 바로 위에 붙어 있던 제목들을 다음 칸으로
-    const move = [col.lastElementChild];
-    col.lastElementChild.remove();
-    while (col.lastElementChild && /ix-make|ix-grp/.test(col.lastElementChild.className)) { move.unshift(col.lastElementChild); col.lastElementChild.remove(); }
-    // 다음 칸 첫머리에 모델 이름이 없으면 '(계속)'으로 다시 표시
-    const prevGrp = [...col.querySelectorAll(".ix-grp, .ix-make")];
-    ci++; if (ci > 1) newIndexPage();
-    col = cols[ci];
-    if (!/ix-make/.test(move[0].className)) {
-      const lastMake = [...prevGrp].reverse().find((x) => x.classList.contains("ix-make"));
-      const lastGrp = [...prevGrp].reverse().find((x) => x.classList.contains("ix-grp"));
-      if (lastMake) col.insertAdjacentHTML("beforeend", lastMake.outerHTML.replace("</span>", " (계속)</span>"));
-      if (!/ix-grp/.test(move[0].className) && lastGrp) col.insertAdjacentHTML("beforeend", lastGrp.outerHTML);
-    }
-    move.forEach((n) => col.appendChild(n));
+  sections.forEach((sec) => {
+    let cols = [], ci = 0;
+    const newIndexPage = () => {
+      const el = page("", "VEHICLE INDEX", `차종별 색인 · ${esc(sec.title)}`);
+      body(el).innerHTML = `<div class="ix-cols"><div class="ix-col">${colHead}</div><div class="ix-col">${colHead}</div></div>`;
+      cols = [...el.querySelectorAll(".ix-col")]; ci = 0;
+    };
+    newIndexPage();
+    sec.items.forEach((it) => {
+      let col = cols[ci];
+      col.insertAdjacentHTML("beforeend", it.html);
+      if (!over(col)) return;
+      // 넘치면: 이 항목과 바로 위에 붙은 제목들을 다음 칸(또는 다음 쪽)으로
+      const move = [col.lastElementChild];
+      col.lastElementChild.remove();
+      while (col.lastElementChild && /ix-make|ix-grp/.test(col.lastElementChild.className)) { move.unshift(col.lastElementChild); col.lastElementChild.remove(); }
+      const heads = [...col.querySelectorAll(".ix-make, .ix-grp")].reverse();
+      ci++; if (ci > 1) newIndexPage();
+      col = cols[ci];
+      // 모델 중간에서 나뉘면 새 칸 첫머리에 모델 이름만 다시 표시
+      if (!/ix-make|ix-grp/.test(move[0].className)) {
+        const lastGrp = heads.find((x) => x.classList.contains("ix-grp"));
+        if (lastGrp) col.insertAdjacentHTML("beforeend", lastGrp.outerHTML);
+      }
+      move.forEach((n) => col.appendChild(n));
+    });
   });
   toc.push(["차종별 색인", firstIndexPage]);
 

@@ -234,11 +234,8 @@ function handle(raw) {
   // 연구자료 질문 버튼 (현재 단계는 그대로 유지)
   if (v === "#rqlist") return say("궁금한 질문을 골라 주십시오. 등록된 논문·시험 자료만 근거로 답변드립니다." + chips(ResearchQA.QUESTIONS.map((q) => [q.q, "#rq:" + q.id])));
   if (v.startsWith("#rq:")) return sayResearch(v.slice(4));
-  // 디자인(가공 타입) 보기: 상담 내용이 사라지지 않게 새 탭으로 열고, 새 탭이 막히면 이 탭에서 이동
-  if (v === "#lab" || v === "#tech") {
-    if (!window.open("technology.html#chaos-types", "_blank")) SiteNav.go("technology.html#chaos-types");
-    return;
-  }
+  // 디자인(가공 타입) 보기: 상담을 그대로 둔 채 화면 위에 사진을 띄움 (페이지 이동 없음)
+  if (v === "#lab" || v === "#tech") { showDesignViewer(); return; }
   if (v === "#inquiry") { $("#toInquiry").click(); return; }
   if (v === "#rqcont") {
     if (S.step === "vehicle") return say("이어서 차량을 확인할게요. <b>차대번호 17자리</b>나 차종(예: 벤츠 W213, BMW 5시리즈)을 입력해 주십시오." + chips([["차대번호를 몰라요", "#novin"]]));

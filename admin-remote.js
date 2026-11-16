@@ -37,14 +37,20 @@
     return before !== JSON.stringify(list);
   }
 
-  // 바뀐 기록만 서버로 (순서대로 하나씩)
-  let chain = Promise.resolve();
+  // 바뀐 기록만 서버로 (순서대로 하나씩). 저장이 끝나면 화면 아래에 결과를 잠깐 보여 줌 (채팅 답변은 대화창에 바로 보이므로 생략)
+  let chain = Promise.resolve(), failed = false;
   function queue(payload) {
     pending++; gen++;
     chain = chain.then(async () => {
       const r = await api("POST", payload);
-      if (!r.ok && r.status !== 401) toast("저장하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주십시오.");
-    }).finally(() => { pending--; gen++; });
+      if (!r.ok && r.status !== 401) failed = true;
+    }).finally(() => {
+      pending--; gen++;
+      if (pending) return;
+      if (failed) toast("저장하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주십시오.", true);
+      else if (payload.kind !== "chat") toast(payload.action === "delete" ? "삭제했습니다." : "저장했습니다.");
+      failed = false;
+    });
   }
 
   window.RemoteStore = {
@@ -77,11 +83,11 @@
 
   // ---------------- 화면 ----------------
   const $ = (s) => document.querySelector(s);
-  function toast(text) {
+  function toast(text, isError) {
     let t = $("#adminToast");
     if (!t) { t = document.createElement("div"); t.id = "adminToast"; t.className = "contact-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
-    t.textContent = text; t.classList.add("show");
-    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 4000);
+    t.textContent = text; t.classList.add("show"); t.classList.toggle("err", !!isError);
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), isError ? 6000 : 2500);
   }
   function showLogin(msg) {
     $("#adminApp").hidden = true; $("#logoutBtn").hidden = true;
@@ -95,7 +101,11 @@
       me.db ? "저장소 연결됨" : "⚠ 저장소(Upstash Redis)가 연결되지 않아 고객 기록을 받을 수 없습니다",
       `이메일 알림 ${n.email ? "켜짐" : "꺼짐"}`, `문자 알림 ${n.sms ? "켜짐" : "꺼짐"}`,
     ];
-    $("#sysStatus").innerHTML = parts.map((p) => `<span>${p}</span>`).join(" · ") + (n.email || n.sms ? ' <button type="button" class="btn btn-ghost" id="testNotify" style="padding:4px 10px">알림 시험 보내기</button>' : "");
+    // 상태 · 알림 시험 · 로그아웃 (휴대폰에서는 상단 메뉴의 로그아웃이 숨겨지므로 여기에도 둠)
+    $("#sysStatus").innerHTML = `<span class="sys-items">${parts.map((p) => `<span>${p}</span>`).join(" · ")}</span><span class="sys-actions">` +
+      (n.email || n.sms ? '<button type="button" class="btn btn-ghost" id="testNotify">알림 시험 보내기</button>' : "") +
+      '<button type="button" class="btn btn-ghost" id="logoutBtn2">로그아웃</button></span>';
+    $("#logoutBtn2").onclick = logout;
     const tb = $("#testNotify");
     if (tb) tb.onclick = async () => {
       tb.disabled = true;
@@ -142,11 +152,12 @@
       : r.data.error === "no_password" ? "관리자 비밀번호가 아직 설정되지 않았습니다. Vercel 환경 변수에 ADMIN_PASSWORD를 등록해 주십시오." : "로그인하지 못했습니다. 잠시 후 다시 시도해 주십시오.";
     $("#loginPw").select();
   });
-  $("#logoutBtn").addEventListener("click", async (e) => {
-    e.preventDefault();
+  async function logout(e) {
+    if (e) e.preventDefault();
     await api("POST", { action: "logout" });
     location.reload();
-  });
+  }
+  $("#logoutBtn").addEventListener("click", logout);
 
   boot();
 })();

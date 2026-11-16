@@ -456,8 +456,8 @@ function botReply(text) {
 
   // 0) 카오스 가공 연구자료 질문 (research-qa.js — 등록된 논문·시험 데이터만 근거)
   if (text === "#rqlist") return say("궁금한 질문을 골라 주십시오. 등록된 논문·시험 자료만 근거로 답변드립니다." + chips(ResearchQA.QUESTIONS.map((q) => [q.q, "#rq:" + q.id])));
-  if (text === "#lab") { SiteNav.go("technology.html#chaos-types"); return; }
-  if (text === "#tech") { SiteNav.go("technology.html#chaos-types"); return; }
+  // 디자인 보기: 상담창을 그대로 둔 채 화면 위에 사진을 띄움 (페이지 이동 없음)
+  if (text === "#lab" || text === "#tech") { showDesignViewer(); return; }
   if (text.startsWith("#rq:")) { const a = ResearchQA.answer(text.slice(4), t); if (a) return say(a.html + chips(a.actions)); }
   const rqId = window.ResearchQA && ResearchQA.match(t);
   if (rqId) { const a = ResearchQA.answer(rqId, t); if (a) return askGemini(text, t, { fallback: a.html + chips(a.actions), chips: RQ_CHIPS }); }

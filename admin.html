@@ -24,7 +24,7 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap admin-main">
     <section class="panel admin-login" id="loginBox" hidden>
       <h2>관리자 로그인</h2>
       <form id="loginForm" autocomplete="on">
@@ -35,10 +35,10 @@
     </section>
 
     <div id="adminApp" hidden>
-    <p class="sys-status" id="sysStatus"></p>
     <div class="stat-row" id="stats"></div>
+    <p class="sys-status" id="sysStatus"></p>
 
-    <section class="panel">
+    <section class="panel" id="listPanel">
       <div class="admin-tabs">
         <button type="button" data-tab="ord">주문</button>
         <button type="button" class="on" data-tab="req">가공 의뢰</button>

@@ -491,7 +491,7 @@ function build() {
         <div><span>본사</span><b>${ADDR}</b></div>
       </div>
       <img class="back-disc" src="${ROOT}images/brake-discs/hero-disc-a.png" alt="" />
-      <div class="legal">본 카탈로그는 거래처 배포용 B2B 자료입니다.<br />주식회사 카리브무역 | 대표 김철민 | 사업자등록번호 608-86-12959 | 통신판매업 신고 제2023-울산남구-1093호<br />
+      <div class="legal">주식회사 카리브무역 | 대표 김철민 | 사업자등록번호 608-86-12959 | 통신판매업 신고 제2023-울산남구-1093호<br />
         가격 기준일 ${PRICE_DATE} · 부가세 포함 · 1세트(2매) 기준. 가격 및 적용 차종은 사전 예고 없이 변경될 수 있으므로 주문 전 확인하시기 바랍니다.<br />
         제품 이미지는 대표 이미지로, 품번별 실제 외관(햇 높이, 볼트 홀 수 등)과 다를 수 있습니다.<br />
         © ${PRICE_DATE.slice(0, 4)} CARIBE TRADING. All rights reserved.</div>
